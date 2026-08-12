@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portfolio de Sif-Eddine Laidi, développeur full stack basé à Casablanca, Maroc.">
+  <title>Sif-Eddine Laidi — Développeur Full Stack</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&lt;/&gt;</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="logo">&lt;Sif /&gt;</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav-menu" id="navMenu" aria-label="Navigation principale">
+        <a href="#home" class="nav-link">Accueil</a>
+        <a href="#about" class="nav-link">À propos</a>
+        <a href="#skills" class="nav-link">Compétences</a>
+        <a href="#projects" class="nav-link">Projets</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="assets/cv.pdf" class="btn btn-small nav-cv" download>Télécharger CV</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="container hero-content">
+        <p class="hero-greeting">Bonjour, je suis</p>
+        <h1 class="hero-name">Sif-Eddine <span class="accent">Laidi</span></h1>
+        <h2 class="hero-title">Développeur <span class="accent-typed" id="typed"></span></h2>
+        <p class="hero-text">
+          Full stack junior, passionné par le web, les bases de données et
+          l'intelligence artificielle. Je crée des solutions concrètes et innovantes.
+        </p>
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">Voir mes projets</a>
+          <a href="#contact" class="btn btn-outline">Me contacter</a>
+          <a href="assets/cv.pdf" class="btn btn-ghost" download>Télécharger mon CV</a>
+        </div>
+        <div class="hero-socials">
+          <a href="mailto:sifeddinelaidi@gmail.com" aria-label="Email">Email</a>
+          <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
+          <a href="https://www.linkedin.com/in/sif_eddine-laidi" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="container">
+        <p class="section-tag">À propos</p>
+        <h2 class="section-title">Qui suis-je ?</h2>
+        <div class="about-grid">
+          <div class="about-text">
+            <p>
+              Développeur full stack junior, formé aux technologies front-end et back-end
+              (React, Node.js, PHP/Laravel, Spring Boot) et à la gestion de bases de données
+              relationnelles et NoSQL.
+            </p>
+            <p>
+              Auteur de plusieurs projets concrets : une plateforme de gestion des ordonnances
+              médicales et une plateforme de gestion des surveillances d'examens.
+            </p>
+            <p>
+              Curieux, rigoureux et autonome, je recherche un poste de développeur full stack
+              pour mettre ces compétences au service de projets innovants.
+            </p>
+          </div>
+          <div class="about-card">
+            <div class="about-photo" id="aboutPhoto">
+              <img src="assets/img/sif.png" alt="Photo de Sif-Eddine Laidi" class="photo-img">
+            </div>
+            <ul class="about-info">
+              <li><span>Nom</span>Sif-Eddine Laidi</li>
+              <li><span>Localisation</span>Casablanca, Maroc</li>
+              <li><span>Email</span>sifeddinelaidi@gmail.com</li>
+              <li><span>Téléphone</span>+212 6 06 66 33 39</li>
+            </ul>
+            <a href="assets/cv.pdf" class="btn btn-primary btn-block" download>Télécharger mon CV</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="section section-alt">
+      <div class="container">
+        <p class="section-tag">Compétences</p>
+        <h2 class="section-title">Mes compétences</h2>
+        <div class="skills-grid">
+          <article class="skill-card">
+            <h3 class="skill-title">Front-end</h3>
+            <p class="skill-techs">HTML, CSS, JavaScript, React, Bootstrap</p>
+          </article>
+          <article class="skill-card">
+            <h3 class="skill-title">Back-end</h3>
+            <p class="skill-techs">Node.js, PHP, Laravel, Spring Boot</p>
+          </article>
+          <article class="skill-card">
+            <h3 class="skill-title">Bases de données</h3>
+            <p class="skill-techs">MySQL, MongoDB, Oracle</p>
+          </article>
+          <article class="skill-card">
+            <h3 class="skill-title">Versioning</h3>
+            <p class="skill-techs">Git, GitHub, GitLab</p>
+          </article>
+          <article class="skill-card">
+            <h3 class="skill-title">API</h3>
+            <p class="skill-techs">Création et intégration RESTful</p>
+          </article>
+          <article class="skill-card">
+            <h3 class="skill-title">Outils</h3>
+            <p class="skill-techs">Docker, Postman, CI/CD, Keycloak, Hostinger</p>
+          </article>
+          <article class="skill-card skill-wide">
+            <h3 class="skill-title">Intelligence Artificielle</h3>
+            <p class="skill-techs">Systèmes multi-agents, Prompt Engineering (CoStar), OCR, Python</p>
+          </article>
+        </div>
+
+        <h3 class="sub-title">Langues</h3>
+        <div class="langs">
+          <div class="lang">
+            <span class="lang-name">Arabe</span>
+            <div class="lang-bar"><span class="lang-fill" data-level="100"></span></div>
+            <span class="lang-level">Natif</span>
+          </div>
+          <div class="lang">
+            <span class="lang-name">Français</span>
+            <div class="lang-bar"><span class="lang-fill" data-level="85"></span></div>
+            <span class="lang-level">Courant</span>
+          </div>
+          <div class="lang">
+            <span class="lang-name">Anglais</span>
+            <div class="lang-bar"><span class="lang-fill" data-level="60"></span></div>
+            <span class="lang-level">Conversationnel</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <div class="container">
+        <p class="section-tag">Projets</p>
+        <h2 class="section-title">Mes projets</h2>
+        <div class="filters" id="filters">
+          <button class="filter active" data-filter="all">Tous</button>
+          <button class="filter" data-filter="stage">Stage</button>
+          <button class="filter" data-filter="hackathon">Hackathon</button>
+          <button class="filter" data-filter="academique">Académique</button>
+        </div>
+
+        <div class="projects-grid">
+          <article class="project-card" data-category="stage">
+            <div class="project-badge">Stage de fin d'études</div>
+            <h3 class="project-title">Plateforme de surveillance d'examens</h3>
+            <p class="project-desc">
+              Planification automatisée, affectation des surveillants et suivi en temps réel.
+              Authentification et gestion des rôles avec Keycloak.
+            </p>
+            <div class="project-techs">
+              <span>React</span><span>Spring Boot</span><span>Keycloak</span>
+            </div>
+            <p class="project-date">15/05/2026 – 15/08/2026 · Faculté des Sciences Ben M'Sik</p>
+            <div class="project-links">
+              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small">Voir la démo</a>
+              <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            </div>
+          </article>
+
+          <article class="project-card" data-category="stage">
+            <div class="project-badge">Stage</div>
+            <h3 class="project-title">Plateforme d'ordonnances médicales</h3>
+            <p class="project-desc">
+              Gestion des ordonnances médicales avec génération automatique de PDF.
+              Conception de l'interface utilisateur et intégration de l'API back-end.
+            </p>
+            <div class="project-techs">
+              <span>React</span><span>Laravel</span><span>PDF</span>
+            </div>
+            <p class="project-date">01/03/2024 – 01/04/2024</p>
+            <div class="project-links">
+              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small">Voir la démo</a>
+              <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            </div>
+          </article>
+
+          <article class="project-card" data-category="hackathon">
+            <div class="project-badge">Hackathon · Finaliste Top 5/85</div>
+            <h3 class="project-title">Solution documentaire multi-agents</h3>
+            <p class="project-desc">
+              Automatisation du traitement documentaire avec raisonnement et prise de décision
+              autonome (Intake, Classification, Extraction, Validation). Intégration OCR et
+              prompt engineering (framework CoStar).
+            </p>
+            <div class="project-techs">
+              <span>Python</span><span>Django</span><span>OCR</span><span>Multi-agents</span>
+            </div>
+            <p class="project-date">Début 2026 · Capgemini Maroc, Équipe FiveLinks</p>
+            <div class="project-links">
+              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small">Voir la démo</a>
+              <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            </div>
+          </article>
+
+          <article class="project-card" data-category="academique">
+            <div class="project-badge">Projet académique</div>
+            <h3 class="project-title">Plateforme d'apprentissage et d'évaluation</h3>
+            <p class="project-desc">
+              Plateforme éducative numérique : gestion intégrée des cours, des exercices et des
+              statistiques de progression des apprenants.
+            </p>
+            <div class="project-techs">
+              <span>React</span><span>Spring Boot</span><span>Keycloak</span>
+            </div>
+            <p class="project-date">09/2024 – 09/2025</p>
+            <div class="project-links">
+              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small">Voir la démo</a>
+              <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section section-alt">
+      <div class="container">
+        <p class="section-tag">Contact</p>
+        <h2 class="section-title">Travaillons ensemble</h2>
+        <p class="contact-intro">
+          Une question, un projet, une opportunité ? N'hésitez pas à me contacter.
+        </p>
+        <div class="contact-grid">
+          <a href="mailto:sifeddinelaidi@gmail.com" class="contact-card">
+            <span class="contact-icon">✉</span>
+            <span class="contact-label">Email</span>
+            <span class="contact-value" id="contactEmail">sifeddinelaidi@gmail.com</span>
+          </a>
+          <a href="tel:+212606663339" class="contact-card">
+            <span class="contact-icon">✆</span>
+            <span class="contact-label">Téléphone</span>
+            <span class="contact-value">+212 6 06 66 33 39</span>
+          </a>
+          <a href="https://github.com/sifeddine.00" target="_blank" rel="noopener" class="contact-card">
+            <span class="contact-icon">⌥</span>
+            <span class="contact-label">GitHub</span>
+            <span class="contact-value">github.com/sifeddine.00</span>
+          </a>
+          <a href="https://www.linkedin.com/in/sif_eddine-laidi" target="_blank" rel="noopener" class="contact-card">
+            <span class="contact-icon">in</span>
+            <span class="contact-label">LinkedIn</span>
+            <span class="contact-value">Sif_Eddine Laidi</span>
+          </a>
+        </div>
+        <div class="contact-cta">
+          <a href="assets/cv.pdf" class="btn btn-primary" download>Télécharger mon CV (PDF)</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>&copy; <span id="year"></span> Sif-Eddine Laidi — Développeur Full Stack.</p>
+      <a href="#home" class="footer-top" aria-label="Retour en haut">↑ Retour en haut</a>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
