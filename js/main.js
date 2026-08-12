@@ -240,18 +240,4 @@
     });
   });
 
-  const emailEl = document.getElementById("contactEmail");
-  if (emailEl) {
-    emailEl.addEventListener("click", (e) => {
-      e.preventDefault();
-      const email = "sifeddinelaidi@gmail.com";
-      navigator.clipboard
-        ?.writeText(email)
-        .then(() => {
-          emailEl.textContent = "Email copié !";
-          setTimeout(() => (emailEl.textContent = email), 1800);
-        })
-        .catch(() => (window.location.href = `mailto:${email}`));
-    });
-  }
 })();
