@@ -151,34 +151,53 @@
   setActiveLink();
 
   const typedEl = document.getElementById("typed");
-  if (typedEl) {
-    const words = ["Full Stack", "Passionné du Web", "et de l'IA"];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let deleting = false;
+  let typeTimeout = null;
+  let wordIndex = 0;
+  let charIndex = 0;
+  let deleting = false;
 
-    const type = () => {
-      const word = words[wordIndex];
-      typedEl.textContent = word.slice(0, charIndex);
+  const getTypewriterWords = () => {
+    if (window.i18n) {
+      const words = window.i18n.t("typewriter.words");
+      if (Array.isArray(words)) return words;
+    }
+    return ["Full Stack", "Passionné du Web", "et de l'IA"];
+  };
 
-      if (!deleting && charIndex < word.length) {
-        charIndex++;
-        setTimeout(type, 90);
-      } else if (!deleting && charIndex === word.length) {
-        deleting = true;
-        setTimeout(type, 1800);
-      } else if (deleting && charIndex > 0) {
-        charIndex--;
-        setTimeout(type, 40);
-      } else {
-        deleting = false;
-        wordIndex = (wordIndex + 1) % words.length;
-        setTimeout(type, 350);
-      }
-    };
+  const type = () => {
+    if (typeTimeout) clearTimeout(typeTimeout);
+    const words = getTypewriterWords();
+    const word = words[wordIndex];
+    typedEl.textContent = word.slice(0, charIndex);
 
-    type();
-  }
+    if (!deleting && charIndex < word.length) {
+      charIndex++;
+      typeTimeout = setTimeout(type, 90);
+    } else if (!deleting && charIndex === word.length) {
+      deleting = true;
+      typeTimeout = setTimeout(type, 1800);
+    } else if (deleting && charIndex > 0) {
+      charIndex--;
+      typeTimeout = setTimeout(type, 40);
+    } else {
+      deleting = false;
+      wordIndex = (wordIndex + 1) % words.length;
+      typeTimeout = setTimeout(type, 350);
+    }
+  };
+
+  const resetTypewriter = () => {
+    if (typeTimeout) clearTimeout(typeTimeout);
+    wordIndex = 0;
+    charIndex = 0;
+    deleting = false;
+    typedEl.textContent = "";
+    typeTimeout = setTimeout(type, 350);
+  };
+
+  if (typedEl) type();
+
+  window.addEventListener("langchange", resetTypewriter);
 
   const revealElements = document.querySelectorAll(".section, .hero-content, .footer-content");
   revealElements.forEach((el, i) => {
@@ -239,5 +258,31 @@
       });
     });
   });
+
+  const langToggle = document.querySelector(".lang-toggle");
+  const langDropdown = document.querySelector(".lang-dropdown");
+
+  if (langToggle && langDropdown) {
+    langToggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = langDropdown.classList.toggle("open");
+      langToggle.setAttribute("aria-expanded", String(open));
+    });
+
+    langDropdown.querySelectorAll(".lang-option").forEach((opt) => {
+      opt.addEventListener("click", () => {
+        window.i18n.setLanguage(opt.dataset.lang);
+        langDropdown.classList.remove("open");
+        langToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    document.addEventListener("click", () => {
+      langDropdown.classList.remove("open");
+      langToggle.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  window.i18n.init();
 
 })();
