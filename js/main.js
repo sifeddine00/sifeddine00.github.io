@@ -3,6 +3,33 @@
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ========== THEME TOGGLE ========== */
+  const THEME_KEY = "portfolio-theme";
+
+  const getSavedTheme = () => {
+    try { return localStorage.getItem(THEME_KEY); } catch { return null; }
+  };
+
+  const getSystemTheme = () =>
+    window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+
+  const applyTheme = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch {}
+  };
+
+  const savedTheme = getSavedTheme() || getSystemTheme();
+  applyTheme(savedTheme);
+
+  const themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme") || "dark";
+      applyTheme(current === "dark" ? "light" : "dark");
+    });
+  }
+
+  /* ========== PARTICLES ========== */
   const particlesCanvas = document.getElementById("particles");
   if (particlesCanvas && !reducedMotion) {
     const ctx = particlesCanvas.getContext("2d");
@@ -10,8 +37,7 @@
     let rafId = null;
 
     const mobile = window.matchMedia("(max-width: 768px)").matches;
-    const count = mobile ? 40 : 85;
-    const mouse = { x: null, y: null };
+    const count = mobile ? 35 : 70;
 
     const resize = () => {
       particlesCanvas.width = window.innerWidth;
@@ -23,10 +49,10 @@
       particles = Array.from({ length: count }, () => ({
         x: Math.random() * particlesCanvas.width,
         y: Math.random() * particlesCanvas.height,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
-        r: Math.random() * 1.6 + 0.6,
-        base: Math.random() * 0.5 + 0.25,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.4 + 0.5,
+        base: Math.random() * 0.4 + 0.2,
       }));
     };
 
@@ -48,12 +74,12 @@
           const dx = p.x - q.x;
           const dy = p.y - q.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < 110) {
+          if (dist < 100) {
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = `rgba(34, 211, 238, ${(1 - dist / 110) * 0.22})`;
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgba(34, 211, 238, ${(1 - dist / 100) * 0.18})`;
+            ctx.lineWidth = 0.8;
             ctx.stroke();
           }
         }
@@ -67,16 +93,7 @@
       rafId = requestAnimationFrame(draw);
     };
 
-    const onMouseMove = (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-
-    window.addEventListener("resize", () => {
-      init();
-    });
-
-    document.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("resize", init);
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
@@ -90,6 +107,7 @@
     rafId = requestAnimationFrame(draw);
   }
 
+  /* ========== PHOTO FALLBACK ========== */
   const photoCard = document.getElementById("aboutPhoto");
   if (photoCard) {
     const img = photoCard.querySelector(".photo-img");
@@ -98,18 +116,17 @@
     fallback.textContent = "SL";
     photoCard.appendChild(fallback);
 
-    const handleError = () => {
-      photoCard.classList.add("no-photo");
-    };
-
+    const handleError = () => photoCard.classList.add("no-photo");
     img.addEventListener("error", handleError);
     img.addEventListener("load", () => photoCard.classList.remove("no-photo"));
     if (img.complete && img.naturalWidth === 0) handleError();
   }
 
+  /* ========== YEAR ========== */
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  /* ========== NAVBAR ========== */
   const navbar = document.getElementById("navbar");
   const navToggle = document.getElementById("navToggle");
   const navMenu = document.getElementById("navMenu");
@@ -121,8 +138,7 @@
   };
 
   navToggle.addEventListener("click", () => {
-    const open = !navMenu.classList.contains("open");
-    toggleMenu(open);
+    toggleMenu(!navMenu.classList.contains("open"));
   });
 
   document.querySelectorAll(".nav-link").forEach((link) => {
@@ -133,11 +149,12 @@
     navbar.classList.toggle("scrolled", window.scrollY > 10);
   });
 
+  /* ========== ACTIVE NAV LINK ========== */
   const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".nav-link");
 
   const setActiveLink = () => {
-    const pos = window.scrollY + 90;
+    const pos = window.scrollY + 100;
     let current = "home";
     sections.forEach((section) => {
       if (pos >= section.offsetTop) current = section.id;
@@ -150,6 +167,7 @@
   window.addEventListener("scroll", setActiveLink);
   setActiveLink();
 
+  /* ========== TYPEWRITER ========== */
   const typedEl = document.getElementById("typed");
   let typeTimeout = null;
   let wordIndex = 0;
@@ -172,17 +190,17 @@
 
     if (!deleting && charIndex < word.length) {
       charIndex++;
-      typeTimeout = setTimeout(type, 90);
+      typeTimeout = setTimeout(type, 80);
     } else if (!deleting && charIndex === word.length) {
       deleting = true;
-      typeTimeout = setTimeout(type, 1800);
+      typeTimeout = setTimeout(type, 2000);
     } else if (deleting && charIndex > 0) {
       charIndex--;
-      typeTimeout = setTimeout(type, 40);
+      typeTimeout = setTimeout(type, 35);
     } else {
       deleting = false;
       wordIndex = (wordIndex + 1) % words.length;
-      typeTimeout = setTimeout(type, 350);
+      typeTimeout = setTimeout(type, 400);
     }
   };
 
@@ -192,13 +210,13 @@
     charIndex = 0;
     deleting = false;
     typedEl.textContent = "";
-    typeTimeout = setTimeout(type, 350);
+    typeTimeout = setTimeout(type, 400);
   };
 
   if (typedEl) type();
-
   window.addEventListener("langchange", resetTypewriter);
 
+  /* ========== REVEAL ON SCROLL ========== */
   const revealElements = document.querySelectorAll(".section, .hero-content, .footer-content");
   revealElements.forEach((el, i) => {
     el.classList.add("reveal");
@@ -217,18 +235,18 @@
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.1 }
     );
     revealElements.forEach((el) => observer.observe(el));
   }
 
+  /* ========== LANGUAGE BARS ========== */
   const langObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const fill = entry.target;
-          fill.style.width = `${fill.dataset.level}%`;
-          langObserver.unobserve(fill);
+          entry.target.style.width = `${entry.target.dataset.level}%`;
+          langObserver.unobserve(entry.target);
         }
       });
     },
@@ -243,6 +261,7 @@
     }
   });
 
+  /* ========== PROJECT FILTERS ========== */
   const filters = document.querySelectorAll(".filter");
   const cards = document.querySelectorAll(".project-card");
 
@@ -259,6 +278,109 @@
     });
   });
 
+  /* ========== TESTIMONIALS SLIDER ========== */
+  const track = document.getElementById("testimonialsTrack");
+  const dotsContainer = document.getElementById("testimonialsDots");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (track && dotsContainer) {
+    const slides = track.querySelectorAll(".testimonial-card");
+    let current = 0;
+    let autoInterval = null;
+
+    const updateSlider = () => {
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dotsContainer.querySelectorAll("button").forEach((dot, i) => {
+        dot.classList.toggle("active", i === current);
+      });
+    };
+
+    const createDots = () => {
+      slides.forEach((_, i) => {
+        const dot = document.createElement("button");
+        dot.setAttribute("aria-label", `Témoignage ${i + 1}`);
+        if (i === 0) dot.classList.add("active");
+        dot.addEventListener("click", () => {
+          current = i;
+          updateSlider();
+          resetAutoPlay();
+        });
+        dotsContainer.appendChild(dot);
+      });
+    };
+
+    const next = () => {
+      current = (current + 1) % slides.length;
+      updateSlider();
+    };
+
+    const prev = () => {
+      current = (current - 1 + slides.length) % slides.length;
+      updateSlider();
+    };
+
+    const resetAutoPlay = () => {
+      if (autoInterval) clearInterval(autoInterval);
+      autoInterval = setInterval(next, 5000);
+    };
+
+    if (prevBtn) prevBtn.addEventListener("click", () => { prev(); resetAutoPlay(); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { next(); resetAutoPlay(); });
+
+    createDots();
+    resetAutoPlay();
+  }
+
+  /* ========== CONTACT FORM ========== */
+  const contactForm = document.getElementById("contactForm");
+  const formStatus = document.getElementById("formStatus");
+
+  if (contactForm) {
+    contactForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const name = contactForm.querySelector('[name="name"]').value.trim();
+      const email = contactForm.querySelector('[name="email"]').value.trim();
+      const subject = contactForm.querySelector('[name="subject"]').value.trim();
+      const message = contactForm.querySelector('[name="message"]').value.trim();
+
+      if (!name || !email || !subject || !message) {
+        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_error") : "Veuillez remplir tous les champs.";
+        formStatus.className = "form-status error";
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_email_error") : "Adresse email invalide.";
+        formStatus.className = "form-status error";
+        return;
+      }
+
+      const submitBtn = contactForm.querySelector(".btn-submit");
+      submitBtn.classList.add("loading");
+      formStatus.textContent = "";
+      formStatus.className = "form-status";
+
+      const mailtoLink = `mailto:sifeddinelaidi@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Nom: ${name}\nEmail: ${email}\n\n${message}`)}`;
+
+      setTimeout(() => {
+        window.location.href = mailtoLink;
+        submitBtn.classList.remove("loading");
+        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_success") : "Redirection vers votre client mail...";
+        formStatus.className = "form-status success";
+        contactForm.reset();
+
+        setTimeout(() => {
+          formStatus.textContent = "";
+          formStatus.className = "form-status";
+        }, 5000);
+      }, 800);
+    });
+  }
+
+  /* ========== LANG SWITCHER ========== */
   const langToggle = document.querySelector(".lang-toggle");
   const langDropdown = document.querySelector(".lang-dropdown");
 
@@ -283,6 +405,7 @@
     });
   }
 
+  /* ========== I18N INIT ========== */
   window.i18n.init();
 
 })();

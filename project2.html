@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Plateforme d'ordonnances médicales — Sif-Eddine Laidi">
+  <title>Plateforme d'ordonnances médicales — Sif-Eddine Laidi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&lt;/&gt;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .project-detail { padding: 8rem 0 4rem; }
+    .project-hero { margin-bottom: 3rem; }
+    .project-hero .section-tag { margin-bottom: 0.5rem; }
+    .project-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+    .project-hero-meta { display: flex; flex-wrap: wrap; gap: 1rem; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .project-hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+    .project-hero-stack { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .project-hero-stack span { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.3rem 0.8rem; font-size: 0.82rem; font-weight: 600; }
+    .project-gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .gallery-placeholder { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 4rem 2rem; color: var(--text-muted); min-height: 220px; }
+    .gallery-placeholder span { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .project-content { max-width: 720px; }
+    .project-content h2 { font-size: 1.4rem; font-weight: 700; margin: 2.5rem 0 1rem; color: var(--accent); }
+    .project-content p { color: var(--text-muted); font-size: 1.02rem; line-height: 1.8; margin-bottom: 1rem; }
+    .project-content ul { color: var(--text-muted); padding-left: 1.5rem; margin-bottom: 1rem; }
+    .project-content li { margin-bottom: 0.5rem; line-height: 1.7; }
+    .project-nav { display: flex; justify-content: space-between; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .project-nav a { color: var(--accent); font-weight: 600; transition: opacity 0.2s; }
+    .project-nav a:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">&lt;Sif <span class="accent">/&</span>&gt;</a>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Changer de thème">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="project-detail">
+    <div class="container">
+      <div class="project-hero">
+        <p class="section-tag">STAGE</p>
+        <h1>Plateforme d'ordonnances médicales</h1>
+        <div class="project-hero-meta">
+          <span>01/03/2024 – 01/04/2024</span>
+          <span>Entreprise — Casablanca</span>
+        </div>
+        <div class="project-hero-stack">
+          <span>React</span><span>Laravel</span><span>MySQL</span><span>PDF Generation</span>
+        </div>
+      </div>
+
+      <div class="project-gallery">
+        <div class="gallery-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Formulaire d'ordonnance</span>
+        </div>
+        <div class="gallery-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Génération PDF</span>
+        </div>
+        <div class="gallery-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>Dashboard médecin</span>
+        </div>
+      </div>
+
+      <div class="project-content">
+        <h2>À propos du projet</h2>
+        <p>
+          Ce projet de stage a été réalisé dans le cadre de la digitalisation des processus médicaux.
+          L'objectif était de développer une plateforme web permettant aux médecins de créer, gérer
+          et suivre les ordonnances médicales de leurs patients de manière numérique et sécurisée.
+        </p>
+
+        <h2>Fonctionnalités principales</h2>
+        <ul>
+          <li>Création et gestion d'ordonnances médicales avec interface intuitive</li>
+          <li>Génération automatique de PDF professionnels pour les ordonnances</li>
+          <li>Base de données de médicaments avec recherche et filtrage</li>
+          <li>Gestion des patients et historique des ordonnances</li>
+          <li>API RESTful pour l'intégration avec d'autres systèmes</li>
+          <li>Interface responsive accessible sur tous les appareils</li>
+        </ul>
+
+        <h2>Stack technique</h2>
+        <p>
+          <strong>Front-end :</strong> React.js avec une architecture component-based, hooks personnalisés
+          pour la logique métier, et un design system responsive.<br>
+          <strong>Back-end :</strong> PHP/Laravel avec Eloquent ORM, API RESTful, middleware d'authentification,
+          et système de validation des données.<br>
+          <strong>Base de données :</strong> MySQL avec schéma relationnel optimisé.<br>
+          <strong>PDF :</strong> Intégration d'une bibliothèque de génération PDF pour produire des ordonnances
+          conformes aux standards médicaux.
+        </p>
+
+        <h2>Défis techniques</h2>
+        <p>
+          La génération de PDF formatés conformément aux normes médicales a été le principal défi technique.
+          Il a fallu concevoir un template flexible capable de s'adapter à différents types d'ordonnances
+          tout en restant lisible et professionnel. L'intégration entre le front-end React et l'API Laravel
+          a nécessité une attention particulière sur la gestion des erreurs et le loading states.
+        </p>
+      </div>
+
+      <div class="project-nav">
+        <a href="index.html#projects">← Retour aux projets</a>
+        <a href="https://github.com/sifeddine00" target="_blank" rel="noopener">Voir sur GitHub →</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>&copy; <span id="year"></span> Sif-Eddine Laidi — Développeur Full Stack.</p>
+      <a href="index.html#home" class="footer-top">↑ Retour en haut</a>
+    </div>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

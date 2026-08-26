@@ -6,6 +6,9 @@
   <meta name="description" content="Portfolio de Sif-Eddine Laidi, développeur full stack basé à Casablanca, Maroc.">
   <title>Sif-Eddine Laidi — Développeur Full Stack</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&lt;/&gt;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,17 +17,25 @@
 
   <header class="navbar" id="navbar">
     <div class="container nav-container">
-      <a href="#home" class="logo">&lt;Sif /&gt;</a>
-      <button class="nav-toggle" id="navToggle" data-i18n-aria="nav.aria.toggle" aria-label="Ouvrir le menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-      <nav class="nav-menu" id="navMenu" data-i18n-aria="nav.aria.main" aria-label="Navigation principale">
-        <a href="#home" class="nav-link" data-i18n="nav.home">Accueil</a>
+      <a href="#home" class="logo">&lt;Sif <span class="accent">/&</span>&gt;</a>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Changer de thème">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+      <nav class="nav-menu" id="navMenu" aria-label="Navigation principale">
+        <a href="#home" class="nav-link active" data-i18n="nav.home">Accueil</a>
         <a href="#about" class="nav-link" data-i18n="nav.about">À propos</a>
+        <a href="#timeline" class="nav-link" data-i18n="nav.timeline">Parcours</a>
         <a href="#skills" class="nav-link" data-i18n="nav.skills">Compétences</a>
         <a href="#projects" class="nav-link" data-i18n="nav.projects">Projets</a>
+        <a href="#testimonials" class="nav-link" data-i18n="nav.testimonials">Témoignages</a>
         <a href="#contact" class="nav-link" data-i18n="nav.contact">Contact</a>
-        <a href="assets/cv.pdf" class="btn btn-small nav-cv" download data-i18n="nav.download_cv">Télécharger CV</a>
+        <a href="assets/cv.pdf" class="btn btn-primary btn-small nav-cv" download data-i18n="nav.download_cv">CV</a>
         <div class="lang-switcher">
           <button class="lang-toggle" aria-label="Changer de langue" aria-expanded="false">🌐 <span class="lang-code">FR</span></button>
           <div class="lang-dropdown">
@@ -38,6 +49,7 @@
   </header>
 
   <main>
+    <!-- Hero -->
     <section id="home" class="hero">
       <div class="container hero-content">
         <p class="hero-greeting" data-i18n="hero.greeting">Bonjour, je suis</p>
@@ -53,13 +65,25 @@
           <a href="assets/cv.pdf" class="btn btn-ghost" download data-i18n="hero.download_cv">Télécharger mon CV</a>
         </div>
         <div class="hero-socials">
-          <a href="mailto:sifeddinelaidi@gmail.com" aria-label="Email">Email</a>
-          <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" aria-label="GitHub">GitHub</a>
-          <a href="https://www.linkedin.com/in/sif-eddine-laidi-aa543a332" target="_blank" rel="noopener" aria-label="LinkedIn">LinkedIn</a>
+          <a href="mailto:sifeddinelaidi@gmail.com" aria-label="Email" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
+          <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" aria-label="GitHub" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/sif-eddine-laidi-aa543a332" target="_blank" rel="noopener" aria-label="LinkedIn" class="social-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
         </div>
+      </div>
+      <div class="hero-scroll-indicator" aria-hidden="true">
+        <span class="scroll-mouse">
+          <span class="scroll-dot"></span>
+        </span>
       </div>
     </section>
 
+    <!-- About -->
     <section id="about" class="section">
       <div class="container">
         <p class="section-tag" data-i18n="about.tag">À propos</p>
@@ -82,13 +106,13 @@
           </div>
           <div class="about-card">
             <div class="about-photo" id="aboutPhoto">
-              <img src="assets/img/sif.png" data-i18n-alt="about.photo_alt" alt="Photo de Sif-Eddine Laidi" class="photo-img">
+              <img src="assets/img/sif.png" alt="Photo de Sif-Eddine Laidi" class="photo-img" loading="lazy">
             </div>
             <ul class="about-info">
-              <li><span data-i18n="about.info_name">Nom</span>Sif-Eddine Laidi</li>
-              <li><span data-i18n="about.info_location">Localisation</span>Casablanca, Maroc</li>
-              <li><span data-i18n="about.info_email">Email</span>sifeddinelaidi@gmail.com</li>
-              <li><span data-i18n="about.info_phone">Téléphone</span>+212 6 06 66 33 39</li>
+              <li><span data-i18n="about.info_name">Nom</span><strong>Sif-Eddine Laidi</strong></li>
+              <li><span data-i18n="about.info_location">Localisation</span><strong>Casablanca, Maroc</strong></li>
+              <li><span data-i18n="about.info_email">Email</span><strong>sifeddinelaidi@gmail.com</strong></li>
+              <li><span data-i18n="about.info_phone">Téléphone</span><strong>+212 6 06 66 33 39</strong></li>
             </ul>
             <a href="assets/cv.pdf" class="btn btn-primary btn-block" download data-i18n="about.download_cv">Télécharger mon CV</a>
           </div>
@@ -96,36 +120,122 @@
       </div>
     </section>
 
-    <section id="skills" class="section section-alt">
+    <!-- Timeline -->
+    <section id="timeline" class="section section-alt">
+      <div class="container">
+        <p class="section-tag" data-i18n="timeline.tag">Parcours</p>
+        <h2 class="section-title" data-i18n="timeline.title">Mon parcours</h2>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <span class="timeline-date" data-i18n="timeline.t1_date">2025 – 2026</span>
+              <h3 class="timeline-title" data-i18n="timeline.t1_title">Master Génie Logiciel</h3>
+              <p class="timeline-place" data-i18n="timeline.t1_place">Faculté des Sciences Ben M'Sik, Casablanca</p>
+              <p class="timeline-desc" data-i18n="timeline.t1_desc">Spécialisation en développement full stack, architectures distribuées et intelligence artificielle.</p>
+              <div class="timeline-badge badge-current" data-i18n="timeline.badge_current">En cours</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <span class="timeline-date" data-i18n="timeline.t2_date">05/2026 – 08/2026</span>
+              <h3 class="timeline-title" data-i18n="timeline.t2_title">Stage de fin d'études</h3>
+              <p class="timeline-place" data-i18n="timeline.t2_place">Faculté des Sciences Ben M'Sik</p>
+              <p class="timeline-desc" data-i18n="timeline.t2_desc">Développement d'une plateforme de surveillance d'examens avec React, Spring Boot et Keycloak.</p>
+              <div class="timeline-badge badge-internship" data-i18n="timeline.badge_internship">Stage</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <span class="timeline-date" data-i18n="timeline.t3_date">01/2024 – 04/2024</span>
+              <h3 class="timeline-title" data-i18n="timeline.t3_title">Stage développeur web</h3>
+              <p class="timeline-place" data-i18n="timeline.t3_place">Entreprise — Casablanca</p>
+              <p class="timeline-desc" data-i18n="timeline.t3_desc">Développement d'une plateforme de gestion des ordonnances médicales avec React et Laravel. Génération automatique de PDF.</p>
+              <div class="timeline-badge badge-internship" data-i18n="timeline.badge_internship">Stage</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <span class="timeline-date" data-i18n="timeline.t4_date">01/2026</span>
+              <h3 class="timeline-title" data-i18n="timeline.t4_title">Hackathon Capgemini</h3>
+              <p class="timeline-place" data-i18n="timeline.t4_place">Capgemini Maroc — Équipe FiveLinks</p>
+              <p class="timeline-desc" data-i18n="timeline.t4_desc">Solution documentaire multi-agents : automatisation du traitement documentaire avec OCR et prompt engineering (CoStar). Finaliste Top 5/85.</p>
+              <div class="timeline-badge badge-hackathon" data-i18n="timeline.badge_hackathon">Hackathon</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <span class="timeline-date" data-i18n="timeline.t5_date">2024 – 2025</span>
+              <h3 class="timeline-title" data-i18n="timeline.t5_title">Licence Informatique</h3>
+              <p class="timeline-place" data-i18n="timeline.t5_place">Faculté des Sciences Ben M'Sik, Casablanca</p>
+              <p class="timeline-desc" data-i18n="timeline.t5_desc">Fondamentaux de l'informatique : algorithmique, structures de données, bases de données et développement web.</p>
+              <div class="timeline-badge badge-education" data-i18n="timeline.badge_education">Diplôme</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills" class="section">
       <div class="container">
         <p class="section-tag" data-i18n="skills.tag">Compétences</p>
         <h2 class="section-title" data-i18n="skills.title">Mes compétences</h2>
         <div class="skills-grid">
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.frontend">Front-end</h3>
             <p class="skill-techs" data-i18n="skills.frontend_techs">HTML, CSS, JavaScript, React, Bootstrap</p>
           </article>
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.backend">Back-end</h3>
             <p class="skill-techs" data-i18n="skills.backend_techs">Node.js, PHP, Laravel, Spring Boot</p>
           </article>
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.database">Bases de données</h3>
             <p class="skill-techs" data-i18n="skills.database_techs">MySQL, MongoDB, Oracle</p>
           </article>
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.versioning">Versioning</h3>
             <p class="skill-techs" data-i18n="skills.versioning_techs">Git, GitHub, GitLab</p>
           </article>
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.api">API</h3>
             <p class="skill-techs" data-i18n="skills.api_techs">Création et intégration RESTful</p>
           </article>
           <article class="skill-card">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.tools">Outils</h3>
             <p class="skill-techs" data-i18n="skills.tools_techs">Docker, Postman, CI/CD, Keycloak, Hostinger</p>
           </article>
           <article class="skill-card skill-wide">
+            <div class="skill-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 1.95 1.4 3.57 3.25 3.92L12 22l.75-12.08C14.6 9.57 16 7.95 16 6a4 4 0 0 0-4-4z"/><circle cx="12" cy="6" r="2"/></svg>
+            </div>
             <h3 class="skill-title" data-i18n="skills.ai">Intelligence Artificielle</h3>
             <p class="skill-techs" data-i18n="skills.ai_techs">Systèmes multi-agents, Prompt Engineering (CoStar), OCR, Python</p>
           </article>
@@ -152,7 +262,8 @@
       </div>
     </section>
 
-    <section id="projects" class="section">
+    <!-- Projects -->
+    <section id="projects" class="section section-alt">
       <div class="container">
         <p class="section-tag" data-i18n="projects.tag">Projets</p>
         <h2 class="section-title" data-i18n="projects.title">Mes projets</h2>
@@ -165,77 +276,170 @@
 
         <div class="projects-grid">
           <article class="project-card" data-category="stage">
-            <div class="project-badge" data-i18n="projects.badge_internship_final">Stage de fin d'études</div>
-            <h3 class="project-title" data-i18n="projects.p1_title">Plateforme de surveillance d'examens</h3>
-            <p class="project-desc" data-i18n="projects.p1_desc">
-              Planification automatisée, affectation des surveillants et suivi en temps réel.
-              Authentification et gestion des rôles avec Keycloak.
-            </p>
-            <div class="project-techs">
-              <span>React</span><span>Spring Boot</span><span>Keycloak</span>
+            <div class="project-image-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>À venir</span>
             </div>
-            <p class="project-date" data-i18n="projects.p1_date">15/05/2026 – 15/08/2026 · Faculté des Sciences Ben M'Sik</p>
-            <div class="project-links">
-              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small" data-i18n="projects.view_demo">Voir la démo</a>
-              <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            <div class="project-body">
+              <div class="project-badge" data-i18n="projects.badge_internship_final">Stage de fin d'études</div>
+              <h3 class="project-title" data-i18n="projects.p1_title">Plateforme de surveillance d'examens</h3>
+              <p class="project-desc" data-i18n="projects.p1_desc">
+                Planification automatisée, affectation des surveillants et suivi en temps réel.
+                Authentification et gestion des rôles avec Keycloak.
+              </p>
+              <div class="project-techs">
+                <span>React</span><span>Spring Boot</span><span>Keycloak</span><span>PostgreSQL</span>
+              </div>
+              <p class="project-date" data-i18n="projects.p1_date">15/05/2026 – 15/08/2026 · Faculté des Sciences Ben M'Sik</p>
+              <div class="project-links">
+                <a href="project1.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+              </div>
             </div>
           </article>
 
           <article class="project-card" data-category="stage">
-            <div class="project-badge" data-i18n="projects.badge_internship">Stage</div>
-            <h3 class="project-title" data-i18n="projects.p2_title">Plateforme d'ordonnances médicales</h3>
-            <p class="project-desc" data-i18n="projects.p2_desc">
-              Gestion des ordonnances médicales avec génération automatique de PDF.
-              Conception de l'interface utilisateur et intégration de l'API back-end.
-            </p>
-            <div class="project-techs">
-              <span>React</span><span>Laravel</span><span>PDF</span>
+            <div class="project-image-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>À venir</span>
             </div>
-            <p class="project-date" data-i18n="projects.p2_date">01/03/2024 – 01/04/2024</p>
-            <div class="project-links">
-              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small" data-i18n="projects.view_demo">Voir la démo</a>
-              <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            <div class="project-body">
+              <div class="project-badge" data-i18n="projects.badge_internship">Stage</div>
+              <h3 class="project-title" data-i18n="projects.p2_title">Plateforme d'ordonnances médicales</h3>
+              <p class="project-desc" data-i18n="projects.p2_desc">
+                Gestion des ordonnances médicales avec génération automatique de PDF.
+                Conception de l'interface utilisateur et intégration de l'API back-end.
+              </p>
+              <div class="project-techs">
+                <span>React</span><span>Laravel</span><span>MySQL</span><span>PDF</span>
+              </div>
+              <p class="project-date" data-i18n="projects.p2_date">01/03/2024 – 01/04/2024</p>
+              <div class="project-links">
+                <a href="project2.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+              </div>
             </div>
           </article>
 
           <article class="project-card" data-category="hackathon">
-            <div class="project-badge" data-i18n="projects.badge_hackathon">Hackathon · Finaliste Top 5/85</div>
-            <h3 class="project-title" data-i18n="projects.p3_title">Solution documentaire multi-agents</h3>
-            <p class="project-desc" data-i18n="projects.p3_desc">
-              Automatisation du traitement documentaire avec raisonnement et prise de décision
-              autonome (Intake, Classification, Extraction, Validation). Intégration OCR et
-              prompt engineering (framework CoStar).
-            </p>
-            <div class="project-techs">
-              <span>Python</span><span>Django</span><span>OCR</span><span>Multi-agents</span>
+            <div class="project-image-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>À venir</span>
             </div>
-            <p class="project-date" data-i18n="projects.p3_date">Début 2026 · Capgemini Maroc, Équipe FiveLinks</p>
-            <div class="project-links">
-              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small" data-i18n="projects.view_demo">Voir la démo</a>
-              <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            <div class="project-body">
+              <div class="project-badge badge-highlight" data-i18n="projects.badge_hackathon">Hackathon · Finaliste Top 5/85</div>
+              <h3 class="project-title" data-i18n="projects.p3_title">Solution documentaire multi-agents</h3>
+              <p class="project-desc" data-i18n="projects.p3_desc">
+                Automatisation du traitement documentaire avec raisonnement et prise de décision
+                autonome (Intake, Classification, Extraction, Validation). Intégration OCR et
+                prompt engineering (framework CoStar).
+              </p>
+              <div class="project-techs">
+                <span>Python</span><span>Django</span><span>OCR</span><span>Multi-agents</span>
+              </div>
+              <p class="project-date" data-i18n="projects.p3_date">Début 2026 · Capgemini Maroc, Équipe FiveLinks</p>
+              <div class="project-links">
+                <a href="project3.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+              </div>
             </div>
           </article>
 
           <article class="project-card" data-category="academique">
-            <div class="project-badge" data-i18n="projects.badge_academic">Projet académique</div>
-            <h3 class="project-title" data-i18n="projects.p4_title">Plateforme d'apprentissage et d'évaluation</h3>
-            <p class="project-desc" data-i18n="projects.p4_desc">
-              Plateforme éducative numérique : gestion intégrée des cours, des exercices et des
-              statistiques de progression des apprenants.
-            </p>
-            <div class="project-techs">
-              <span>React</span><span>Spring Boot</span><span>Keycloak</span>
+            <div class="project-image-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>À venir</span>
             </div>
-            <p class="project-date" data-i18n="projects.p4_date">09/2024 – 09/2025</p>
-            <div class="project-links">
-              <a href="mailto:sifeddinelaidi@gmail.com?subject=Demande%20de%20d%C3%A9mo" class="btn btn-outline btn-small" data-i18n="projects.view_demo">Voir la démo</a>
-              <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+            <div class="project-body">
+              <div class="project-badge" data-i18n="projects.badge_academic">Projet académique</div>
+              <h3 class="project-title" data-i18n="projects.p4_title">Plateforme d'apprentissage et d'évaluation</h3>
+              <p class="project-desc" data-i18n="projects.p4_desc">
+                Plateforme éducative numérique : gestion intégrée des cours, des exercices et des
+                statistiques de progression des apprenants.
+              </p>
+              <div class="project-techs">
+                <span>React</span><span>Spring Boot</span><span>Keycloak</span><span>MySQL</span>
+              </div>
+              <p class="project-date" data-i18n="projects.p4_date">09/2024 – 09/2025</p>
+              <div class="project-links">
+                <a href="project4.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
+              </div>
             </div>
           </article>
         </div>
       </div>
     </section>
 
+    <!-- Testimonials -->
+    <section id="testimonials" class="section">
+      <div class="container">
+        <p class="section-tag" data-i18n="testimonials.tag">Témoignages</p>
+        <h2 class="section-title" data-i18n="testimonials.title">Ce qu'ils disent de moi</h2>
+        <div class="testimonials-slider">
+          <div class="testimonials-track" id="testimonialsTrack">
+            <div class="testimonial-card">
+              <div class="testimonial-quote">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" opacity="0.15"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              </div>
+              <p class="testimonial-text" data-i18n="testimonials.t1_text">Sif-Eddine est un développeur talentueux et rigoureux. Sa capacité à résoudre des problèmes complexes et à travailler en équipe est remarquable.</p>
+              <div class="testimonial-author">
+                <div class="testimonial-avatar">
+                  <span>PR</span>
+                </div>
+                <div>
+                  <strong class="testimonial-name" data-i18n="testimonials.t1_name">Prof. Responsable</strong>
+                  <span class="testimonial-role" data-i18n="testimonials.t1_role">Faculté des Sciences Ben M'Sik</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="testimonial-quote">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" opacity="0.15"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              </div>
+              <p class="testimonial-text" data-i18n="testimonials.t2_text">Un membre dévoué de notre équipe lors du hackathon Capgemini. Sa contribution technique et sa créativité ont été essentielles pour notre succès.</p>
+              <div class="testimonial-author">
+                <div class="testimonial-avatar">
+                  <span>FL</span>
+                </div>
+                <div>
+                  <strong class="testimonial-name" data-i18n="testimonials.t2_name">Équipe FiveLinks</strong>
+                  <span class="testimonial-role" data-i18n="testimonials.t2_role">Hackathon Capgemini 2026</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="testimonial-quote">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" opacity="0.15"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+              </div>
+              <p class="testimonial-text" data-i18n="testimonials.t3_text">Excellent travail sur le projet d'ordonnances médicales. Sif-Eddine a su concevoir une interface intuitive et intégrer efficacement l'API back-end.</p>
+              <div class="testimonial-author">
+                <div class="testimonial-avatar">
+                  <span>CD</span>
+                </div>
+                <div>
+                  <strong class="testimonial-name" data-i18n="testimonials.t3_name">Chef de département</strong>
+                  <span class="testimonial-role" data-i18n="testimonials.t3_role">Entreprise de stage</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="testimonials-controls">
+            <button class="testimonial-btn" id="prevBtn" aria-label="Précédent">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="testimonials-dots" id="testimonialsDots"></div>
+            <button class="testimonial-btn" id="nextBtn" aria-label="Suivant">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
     <section id="contact" class="section section-alt">
       <div class="container">
         <p class="section-tag" data-i18n="contact.tag">Contact</p>
@@ -245,28 +449,64 @@
         </p>
         <div class="contact-grid">
           <a href="mailto:sifeddinelaidi@gmail.com" class="contact-card">
-            <span class="contact-icon">✉</span>
+            <span class="contact-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
             <span class="contact-label" data-i18n="contact.email">Email</span>
-            <span class="contact-value" id="contactEmail">sifeddinelaidi@gmail.com</span>
+            <span class="contact-value">sifeddinelaidi@gmail.com</span>
           </a>
           <a href="tel:+212606663339" class="contact-card">
-            <span class="contact-icon">✆</span>
+            <span class="contact-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </span>
             <span class="contact-label" data-i18n="contact.phone">Téléphone</span>
             <span class="contact-value">+212 6 06 66 33 39</span>
           </a>
           <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="contact-card">
-            <span class="contact-icon">⌥</span>
+            <span class="contact-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            </span>
             <span class="contact-label" data-i18n="contact.github">GitHub</span>
-            <span class="contact-value">github.com/sifeddine00</span>
+            <span class="contact-value">sifeddine00</span>
           </a>
           <a href="https://www.linkedin.com/in/sif-eddine-laidi-aa543a332" target="_blank" rel="noopener" class="contact-card">
-            <span class="contact-icon">in</span>
+            <span class="contact-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </span>
             <span class="contact-label" data-i18n="contact.linkedin">LinkedIn</span>
             <span class="contact-value">Sif-Eddine Laidi</span>
           </a>
         </div>
+
+        <div class="contact-form-wrapper">
+          <h3 class="contact-form-title" data-i18n="contact.form_title">Envoyez-moi un message</h3>
+          <form class="contact-form" id="contactForm" novalidate>
+            <div class="form-group">
+              <label for="formName" data-i18n="contact.form_name">Nom</label>
+              <input type="text" id="formName" name="name" required data-i18n-placeholder="contact.form_name_placeholder" placeholder="Votre nom">
+            </div>
+            <div class="form-group">
+              <label for="formEmail" data-i18n="contact.form_email">Email</label>
+              <input type="email" id="formEmail" name="email" required data-i18n-placeholder="contact.form_email_placeholder" placeholder="votre@email.com">
+            </div>
+            <div class="form-group">
+              <label for="formSubject" data-i18n="contact.form_subject">Sujet</label>
+              <input type="text" id="formSubject" name="subject" required data-i18n-placeholder="contact.form_subject_placeholder" placeholder="Sujet du message">
+            </div>
+            <div class="form-group form-group-full">
+              <label for="formMessage" data-i18n="contact.form_message">Message</label>
+              <textarea id="formMessage" name="message" rows="5" required data-i18n-placeholder="contact.form_message_placeholder" placeholder="Votre message..."></textarea>
+            </div>
+            <div class="form-status" id="formStatus"></div>
+            <button type="submit" class="btn btn-primary btn-submit" data-i18n="contact.form_submit">
+              <span class="btn-text" data-i18n="contact.form_submit">Envoyer le message</span>
+              <span class="btn-loading" data-i18n="contact.form_sending">Envoi en cours...</span>
+            </button>
+          </form>
+        </div>
+
         <div class="contact-cta">
-          <a href="assets/cv.pdf" class="btn btn-primary" download data-i18n="contact.download_cv">Télécharger mon CV (PDF)</a>
+          <a href="assets/cv.pdf" class="btn btn-outline" download data-i18n="contact.download_cv">Télécharger mon CV (PDF)</a>
         </div>
       </div>
     </section>
@@ -275,7 +515,18 @@
   <footer class="footer">
     <div class="container footer-content">
       <p>&copy; <span id="year"></span> Sif-Eddine Laidi — <span data-i18n="footer.rights">Développeur Full Stack.</span></p>
-      <a href="#home" class="footer-top" data-i18n-aria="footer.aria.back_to_top" aria-label="Retour en haut" data-i18n="footer.back_to_top">↑ Retour en haut</a>
+      <div class="footer-socials">
+        <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/in/sif-eddine-laidi-aa543a332" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a href="mailto:sifeddinelaidi@gmail.com" aria-label="Email">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </a>
+      </div>
+      <a href="#home" class="footer-top" aria-label="Retour en haut" data-i18n="footer.back_to_top">↑ Retour en haut</a>
     </div>
   </footer>
 
