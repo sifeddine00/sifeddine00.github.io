@@ -816,6 +816,29 @@ img {
   font-size: 0.88rem;
 }
 
+/* ---------- Centres d'intérêt ---------- */
+.interests {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.interest {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.interest:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
 /* ---------- Projects ---------- */
 .filters {
   display: flex;

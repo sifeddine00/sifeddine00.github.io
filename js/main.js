@@ -18,7 +18,7 @@
     try { localStorage.setItem(THEME_KEY, theme); } catch {}
   };
 
-  const savedTheme = getSavedTheme() || getSystemTheme();
+  const savedTheme = getSavedTheme() || "dark";
   applyTheme(savedTheme);
 
   const themeToggle = document.getElementById("themeToggle");
