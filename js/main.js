@@ -264,19 +264,46 @@
   /* ========== PROJECT FILTERS ========== */
   const filters = document.querySelectorAll(".filter");
   const cards = document.querySelectorAll(".project-card");
+  const countNum = document.getElementById("projectsCountNum");
+
+  const updateProjectsCount = () => {
+    if (!countNum) return;
+    const visible = document.querySelectorAll(".project-card:not(.hidden)").length;
+    countNum.textContent = visible;
+  };
+
+  const applyFilter = (value) => {
+    cards.forEach((card) => {
+      const show = value === "all" || card.dataset.category === value;
+      if (show) {
+        card.classList.remove("hidden");
+        requestAnimationFrame(() => card.classList.add("filter-in"));
+      } else {
+        card.classList.remove("filter-in");
+        card.classList.add("hidden");
+      }
+    });
+    updateProjectsCount();
+  };
 
   filters.forEach((filter) => {
     filter.addEventListener("click", () => {
       filters.forEach((f) => f.classList.remove("active"));
       filter.classList.add("active");
-
-      const value = filter.dataset.filter;
-      cards.forEach((card) => {
-        const show = value === "all" || card.dataset.category === value;
-        card.classList.toggle("hidden", !show);
-      });
+      applyFilter(filter.dataset.filter);
     });
   });
+
+  filters.forEach((rfilter) => {
+    if (rfilter.classList.contains("active")) {
+      cards.forEach((card) => {
+        if (card.dataset.category === rfilter.dataset.filter || rfilter.dataset.filter === "all") {
+          card.classList.add("filter-in");
+        }
+      });
+    }
+  });
+  updateProjectsCount();
 
   /* ========== TESTIMONIALS SLIDER ========== */
   const track = document.getElementById("testimonialsTrack");

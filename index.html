@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <header class="navbar" id="navbar">
@@ -298,12 +297,15 @@
           <button class="filter" data-filter="hackathon" data-i18n="projects.filter_hackathon">Hackathon</button>
           <button class="filter" data-filter="academique" data-i18n="projects.filter_academic">Académique</button>
         </div>
+        <p class="projects-count" id="projectsCount" aria-live="polite"><span id="projectsCountNum">4</span> <span data-i18n="projects.count">projets</span></p>
 
         <div class="projects-grid">
           <article class="project-card" data-category="stage">
-            <div class="project-image-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-              <span>À venir</span>
+            <div class="project-image">
+              <img src="assets/img/fin_etudes.png" alt="Aperçu de la plateforme de surveillance d'examens" loading="lazy">
+              <div class="project-image-overlay">
+                <a href="project1.html" data-i18n="projects.view_project">Voir le projet</a>
+              </div>
             </div>
             <div class="project-body">
               <div class="project-badge" data-i18n="projects.badge_internship_final">Stage de fin d'études</div>
@@ -315,18 +317,25 @@
               <div class="project-techs">
                 <span>React</span><span>Spring Boot</span><span>Keycloak</span><span>PostgreSQL</span>
               </div>
+              <div class="project-metrics">
+                <div class="metric"><span class="metric-value">3</span><span class="metric-label" data-i18n="projects.metric_modules">modules</span></div>
+                <div class="metric"><span class="metric-value">+40</span><span class="metric-label" data-i18n="projects.metric_surveillants">surveillants</span></div>
+                <div class="metric"><span class="metric-value">Temps réel</span><span class="metric-label" data-i18n="projects.metric_suivi">suivi</span></div>
+              </div>
               <p class="project-date" data-i18n="projects.p1_date">15/05/2026 – 15/08/2026 · Faculté des Sciences Ben M'Sik</p>
               <div class="project-links">
-                <a href="project1.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="project1.html" class="btn btn-outline btn-small" data-i18n="projects.case_study">Étude de cas</a>
                 <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
               </div>
             </div>
           </article>
 
           <article class="project-card" data-category="stage">
-            <div class="project-image-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span>À venir</span>
+            <div class="project-image">
+              <img src="assets/img/eordo.png" alt="Aperçu de la plateforme d'ordonnances médicales" loading="lazy">
+              <div class="project-image-overlay">
+                <a href="project2.html" data-i18n="projects.view_project">Voir le projet</a>
+              </div>
             </div>
             <div class="project-body">
               <div class="project-badge" data-i18n="projects.badge_internship">Stage</div>
@@ -338,18 +347,25 @@
               <div class="project-techs">
                 <span>React</span><span>Laravel</span><span>MySQL</span><span>PDF</span>
               </div>
+              <div class="project-metrics">
+                <div class="metric"><span class="metric-value">PDF auto</span><span class="metric-label" data-i18n="projects.metric_pdf">génération</span></div>
+                <div class="metric"><span class="metric-value">CRUD</span><span class="metric-label" data-i18n="projects.metric_crud">patients</span></div>
+                <div class="metric"><span class="metric-value">API</span><span class="metric-label" data-i18n="projects.metric_api">intégration</span></div>
+              </div>
               <p class="project-date" data-i18n="projects.p2_date">01/03/2024 – 01/04/2024</p>
               <div class="project-links">
-                <a href="project2.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="project2.html" class="btn btn-outline btn-small" data-i18n="projects.case_study">Étude de cas</a>
                 <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
               </div>
             </div>
           </article>
 
           <article class="project-card" data-category="hackathon">
-            <div class="project-image-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>À venir</span>
+            <div class="project-image">
+              <img src="assets/img/hackaton.png" alt="Aperçu de la solution documentaire multi-agents" loading="lazy">
+              <div class="project-image-overlay">
+                <a href="project3.html" data-i18n="projects.view_project">Voir le projet</a>
+              </div>
             </div>
             <div class="project-body">
               <div class="project-badge badge-highlight" data-i18n="projects.badge_hackathon">Hackathon · Finaliste Top 5/85</div>
@@ -362,18 +378,25 @@
               <div class="project-techs">
                 <span>Python</span><span>Django</span><span>OCR</span><span>Multi-agents</span>
               </div>
+              <div class="project-metrics">
+                <div class="metric"><span class="metric-value">4</span><span class="metric-label" data-i18n="projects.metric_agents">agents</span></div>
+                <div class="metric"><span class="metric-value">OCR</span><span class="metric-label" data-i18n="projects.metric_ocr">traitement</span></div>
+                <div class="metric"><span class="metric-value">Top 5/85</span><span class="metric-label" data-i18n="projects.metric_rank">classement</span></div>
+              </div>
               <p class="project-date" data-i18n="projects.p3_date">Début 2026 · Capgemini Maroc, Équipe FiveLinks</p>
               <div class="project-links">
-                <a href="project3.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="project3.html" class="btn btn-outline btn-small" data-i18n="projects.case_study">Étude de cas</a>
                 <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
               </div>
             </div>
           </article>
 
           <article class="project-card" data-category="academique">
-            <div class="project-image-placeholder">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <span>À venir</span>
+            <div class="project-image">
+              <img src="assets/img/prj_academique.png" alt="Aperçu de la plateforme d'apprentissage et d'évaluation" loading="lazy">
+              <div class="project-image-overlay">
+                <a href="project4.html" data-i18n="projects.view_project">Voir le projet</a>
+              </div>
             </div>
             <div class="project-body">
               <div class="project-badge" data-i18n="projects.badge_academic">Projet académique</div>
@@ -385,9 +408,14 @@
               <div class="project-techs">
                 <span>React</span><span>Spring Boot</span><span>Keycloak</span><span>MySQL</span>
               </div>
+              <div class="project-metrics">
+                <div class="metric"><span class="metric-value">Cours+Quiz</span><span class="metric-label" data-i18n="projects.metric_cours">contenus</span></div>
+                <div class="metric"><span class="metric-value">Stats</span><span class="metric-label" data-i18n="projects.metric_stats">progression</span></div>
+                <div class="metric"><span class="metric-value">Rôles</span><span class="metric-label" data-i18n="projects.metric_roles">utilisateurs</span></div>
+              </div>
               <p class="project-date" data-i18n="projects.p4_date">09/2024 – 09/2025</p>
               <div class="project-links">
-                <a href="project4.html" class="btn btn-outline btn-small" data-i18n="projects.details">Détails</a>
+                <a href="project4.html" class="btn btn-outline btn-small" data-i18n="projects.case_study">Étude de cas</a>
                 <a href="https://github.com/sifeddine00" target="_blank" rel="noopener" class="btn btn-ghost btn-small">GitHub</a>
               </div>
             </div>
