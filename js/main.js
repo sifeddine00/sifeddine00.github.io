@@ -359,20 +359,19 @@
     resetAutoPlay();
   }
 
-  /* ========== CONTACT FORM ========== */
+  /* ========== CONTACT FORM (Formspree) ========== */
   const contactForm = document.getElementById("contactForm");
   const formStatus = document.getElementById("formStatus");
 
   if (contactForm) {
-    contactForm.addEventListener("submit", (e) => {
+    contactForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const name = contactForm.querySelector('[name="name"]').value.trim();
       const email = contactForm.querySelector('[name="email"]').value.trim();
-      const subject = contactForm.querySelector('[name="subject"]').value.trim();
       const message = contactForm.querySelector('[name="message"]').value.trim();
 
-      if (!name || !email || !subject || !message) {
+      if (!name || !email || !message) {
         formStatus.textContent = window.i18n ? window.i18n.t("contact.form_error") : "Veuillez remplir tous les champs.";
         formStatus.className = "form-status error";
         return;
@@ -390,20 +389,30 @@
       formStatus.textContent = "";
       formStatus.className = "form-status";
 
-      const mailtoLink = `mailto:sifeddinelaidi@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Nom: ${name}\nEmail: ${email}\n\n${message}`)}`;
+      try {
+        const response = await fetch(contactForm.action, {
+          method: "POST",
+          body: new FormData(contactForm),
+          headers: { Accept: "application/json" }
+        });
 
-      setTimeout(() => {
-        window.location.href = mailtoLink;
+        if (response.ok) {
+          formStatus.textContent = window.i18n ? window.i18n.t("contact.form_success") : "Message envoyé avec succès !";
+          formStatus.className = "form-status success";
+          contactForm.reset();
+        } else {
+          throw new Error("Form submission failed");
+        }
+      } catch {
+        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_error") : "Une erreur est survenue. Réessayez.";
+        formStatus.className = "form-status error";
+      } finally {
         submitBtn.classList.remove("loading");
-        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_success") : "Redirection vers votre client mail...";
-        formStatus.className = "form-status success";
-        contactForm.reset();
-
         setTimeout(() => {
           formStatus.textContent = "";
           formStatus.className = "form-status";
-        }, 5000);
-      }, 800);
+        }, 6000);
+      }
     });
   }
 

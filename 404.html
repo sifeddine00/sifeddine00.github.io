@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>404 — Page non trouvée — Sif-Eddine Laidi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&lt;/&gt;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .not-found{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem}
+    .not-found-content{max-width:500px}
+    .not-found-code{font-family:var(--font-mono);font-size:clamp(5rem,15vw,9rem);font-weight:800;color:var(--accent);line-height:1;margin-bottom:1rem;position:relative}
+    .not-found-code::after{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent-strong))}
+    .not-found h1{font-size:1.5rem;font-weight:700;margin:2rem 0 1rem}
+    .not-found p{color:var(--text-muted);font-size:1.05rem;line-height:1.7;margin-bottom:2rem}
+    .not-found-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <main class="not-found">
+    <div class="not-found-content">
+      <div class="not-found-code">404</div>
+      <h1>Page introuvable</h1>
+      <p>La page que vous recherchez n'existe pas ou a été déplacée.</p>
+      <div class="not-found-actions">
+        <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
+        <a href="index.html#contact" class="btn btn-outline">Me contacter</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
