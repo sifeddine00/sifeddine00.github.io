@@ -23,6 +23,7 @@
       "nav.aria.toggle": "Ouvrir le menu",
       "nav.aria.main": "Navigation principale",
       "hero.greeting": "Bonjour, je suis",
+      "hero.name": "Sif-Eddine <span class=\"accent\">Laidi</span>",
       "hero.title_prefix": "Développeur",
       "hero.text": "Full stack junior, passionné par le web, les bases de données et l'intelligence artificielle. Je crée des solutions concrètes et innovantes.",
       "hero.see_projects": "Voir mes projets",
@@ -188,6 +189,7 @@
       "nav.aria.toggle": "Open menu",
       "nav.aria.main": "Main navigation",
       "hero.greeting": "Hello, I'm",
+      "hero.name": "Sif-Eddine <span class=\"accent\">Laidi</span>",
       "hero.title_prefix": "Developer",
       "hero.text": "Junior full stack developer, passionate about web, databases and artificial intelligence. I create concrete and innovative solutions.",
       "hero.see_projects": "See my projects",
@@ -353,6 +355,7 @@
       "nav.aria.toggle": "فتح القائمة",
       "nav.aria.main": "التنقل الرئيسي",
       "hero.greeting": "مرحبا، أنا",
+      "hero.name": "سيف الدين <span class=\"accent\">لعيدي</span>",
       "hero.title_prefix": "مطور",
       "hero.text": "مطور ويب متكامل مبتدئ، شغوف بالويب وقواعد البيانات والذكاء الاصطناعي. أبتكر حلولاً ملموسة ومبتكرة.",
       "hero.see_projects": "عرض مشاريعي",
@@ -560,6 +563,9 @@
     const metaDesc = document.querySelector('meta[name="description"]');
     if (titleEl) titleEl.textContent = t("meta.title");
     if (metaDesc) metaDesc.setAttribute("content", t("meta.description"));
+
+    const nameEl = document.querySelector(".hero-name");
+    if (nameEl) nameEl.innerHTML = t("hero.name");
 
     document.documentElement.lang = currentLang;
     document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";

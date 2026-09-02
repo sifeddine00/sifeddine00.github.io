@@ -364,6 +364,15 @@ img {
   overflow: hidden;
 }
 
+.hero-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  width: 100%;
+  padding-inline: clamp(2.5rem, 10vw, 7rem);
+}
+
 .hero::before {
   content: "";
   position: absolute;
@@ -398,6 +407,8 @@ img {
 .hero-content {
   position: relative;
   z-index: 1;
+  flex: 1;
+  min-width: 0;
 }
 
 .hero-greeting {
@@ -1509,6 +1520,7 @@ img {
 [dir="rtl"] .about-info li { flex-direction: row-reverse; }
 [dir="rtl"] .footer-content { flex-direction: row-reverse; }
 [dir="rtl"] .hero-content { text-align: right; }
+[dir="rtl"] .hero-layout { flex-direction: row-reverse; }
 [dir="rtl"] .contact-cta { text-align: center; }
 [dir="rtl"] .hero-actions { justify-content: flex-start; }
 [dir="rtl"] .lang-switcher { margin-left: 0; margin-right: 0.5rem; }

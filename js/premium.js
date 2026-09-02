@@ -105,6 +105,33 @@
     });
   }
 
+  /* ========== AVATAR PARALLAX + HOVER ========== */
+  const heroAvatar = document.querySelector(".hero-avatar");
+  if (heroAvatar && !isTouch && !reducedMotion) {
+    const avatarImg = heroAvatar.querySelector(".avatar-img");
+    if (avatarImg) {
+      let raf = null;
+      const parallaxFactor = 0.06;
+      heroAvatar.addEventListener("mousemove", (e) => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          const rect = heroAvatar.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = (e.clientX - cx) * -parallaxFactor;
+          const dy = (e.clientY - cy) * -parallaxFactor;
+          avatarImg.style.transform = `translate(${dx}px, ${dy}px) scale(1.04)`;
+          heroAvatar.classList.add("glow-boost");
+          raf = null;
+        });
+      });
+      heroAvatar.addEventListener("mouseleave", () => {
+        avatarImg.style.transform = "translate(0,0) scale(1)";
+        heroAvatar.classList.remove("glow-boost");
+      });
+    }
+  }
+
   /* ========== GLASSMORPHISM ========== */
   document.querySelectorAll(".skill-card, .project-card, .contact-card, .about-card, .timeline-content, .testimonial-card").forEach((el) => {
     el.classList.add("glass", "gradient-border");
