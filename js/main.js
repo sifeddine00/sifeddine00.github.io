@@ -405,7 +405,11 @@
           throw new Error("Form submission failed");
         }
       } catch {
-        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_submit_error") : "Une erreur est survenue lors de l'envoi. Veuillez réessayer.";
+        const __host = window.location.hostname;
+        const isLocal = window.location.protocol === "file:" || __host === "localhost" || __host === "127.0.0.1";
+        formStatus.textContent = isLocal
+          ? (window.i18n ? window.i18n.t("contact.form_local_error") : "Le formulaire de contact ne fonctionne que sur le site en ligne.")
+          : (window.i18n ? window.i18n.t("contact.form_submit_error") : "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
         formStatus.className = "form-status error";
       } finally {
         submitBtn.classList.remove("loading");
