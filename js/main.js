@@ -402,7 +402,14 @@
           formStatus.className = "form-status success";
           contactForm.reset();
         } else {
-          throw new Error("Form submission failed");
+          const statusKey = "contact.form_status_" + response.status;
+          const fallbackMsg = "Erreur " + response.status + ". " + (window.i18n ? window.i18n.t("contact.form_submit_error") : "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+          formStatus.textContent = window.i18n && window.i18n.t(statusKey) !== statusKey
+            ? window.i18n.t(statusKey)
+            : fallbackMsg;
+          formStatus.className = "form-status error";
+          console.error("Formspree submission error:", response.status, response.statusText);
+          throw new Error("Form submission failed: " + response.status);
         }
       } catch {
         const __host = window.location.hostname;
