@@ -1272,6 +1272,15 @@ img {
 }
 
 /* Contact Form */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .contact-form-wrapper {
   max-width: 600px;
   margin: 0 auto 3rem;

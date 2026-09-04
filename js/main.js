@@ -369,9 +369,10 @@
 
       const name = contactForm.querySelector('[name="name"]').value.trim();
       const email = contactForm.querySelector('[name="email"]').value.trim();
+      const subject = contactForm.querySelector('[name="subject"]').value.trim();
       const message = contactForm.querySelector('[name="message"]').value.trim();
 
-      if (!name || !email || !message) {
+      if (!name || !email || !subject || !message) {
         formStatus.textContent = window.i18n ? window.i18n.t("contact.form_error") : "Veuillez remplir tous les champs.";
         formStatus.className = "form-status error";
         return;
