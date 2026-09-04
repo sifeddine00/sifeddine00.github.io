@@ -405,7 +405,7 @@
           throw new Error("Form submission failed");
         }
       } catch {
-        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_error") : "Une erreur est survenue. Réessayez.";
+        formStatus.textContent = window.i18n ? window.i18n.t("contact.form_submit_error") : "Une erreur est survenue lors de l'envoi. Veuillez réessayer.";
         formStatus.className = "form-status error";
       } finally {
         submitBtn.classList.remove("loading");
