@@ -409,7 +409,6 @@
             : fallbackMsg;
           formStatus.className = "form-status error";
           console.error("Formspree submission error:", response.status, response.statusText);
-          throw new Error("Form submission failed: " + response.status);
         }
       } catch {
         const __host = window.location.hostname;
