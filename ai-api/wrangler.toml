@@ -1,0 +1,33 @@
+name = "portfolio-chat"
+main = "worker.js"
+# Date volontairement anterieure a celle du jour : elle fige le comportement du
+# Worker et evite que la production diverge du runtime local. 2026-05-03 est la
+# date maximale supportee par le workerd embarque dans wrangler 4.86.0 ; le
+# runtime heberge en production accepte les dates plus recentes.
+# Node 20.17.0 est requis >= 20.3.0 pour wrangler 4.86.0, donc pas de Node 22 ici.
+compatibility_date = "2026-05-03"
+
+# Domaine workers.dev : suffisant pour un portfolio.
+# Pour un sous-domaine custom plus tard, ajouter ici :
+#   routes = [{ pattern = "api.sifeddine.com", custom_domain = true }]
+# et supprimer workers_dev = false.
+workers_dev = true
+
+# --- Secrets (a definir via `wrangler.cmd secret put`, jamais dans ce fichier) ---
+# HF_TOKEN              token Hugging Face, permission "Make calls to Inference Providers"
+# ALLOWED_ORIGINS       origines autorisees, separees par des virgules
+# CHAT_MODEL            optionnel, par defaut Qwen/Qwen3-4B-Instruct-2507
+# CHAT_MAX_TOKENS       optionnel, par defaut 450
+
+# --- Rate limiting ---
+# Limite KV gratuite : 100 000 lectures/jour, 1 000 ECRITURES/jour.
+# Chaque requete de chat = 2 ecritures (compteur global + compteur IP).
+# globalPerDay dans worker.js est donc plafonne a 500 pour rester sous la limite.
+[[kv_namespaces]]
+binding = "CHAT"
+id = "05f8cfd0da50463a8714d28f1943eb0a"
+
+# --- Import du JSON au build ---
+# Aucune table de rules ici : profile.json est importe nativement par esbuild dans
+# profile.js, qui produit le meme objet en dev et en production. Une regle de
+# type "Data" ici rendait le module dependant de l'environnement (cf. erreur 1042).

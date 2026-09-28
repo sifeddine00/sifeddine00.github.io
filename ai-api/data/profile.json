@@ -1,0 +1,234 @@
+{
+  "_review": {
+    "note": "Fichier de travail. Ce bloc est ignore par le Worker. Supprime-le une fois ta relecture faite.",
+    "points_a_verifier": [
+      "RESOLU - PostgreSQL ajoute a skills.database.",
+      "RESOLU - disponibilite rendue prudente : status open_to_offers, open_to limite au poste full stack, revendication teletravail retiree de location_flexibility.",
+      "EN ATTENTE - les 4 boutons GitHub des cartes projet (index.html lignes 393, 423, 454, 484) pointent tous vers la page de profil github.com/sifeddine00, pas vers un depot par projet. A remplacer par les URL reelles des depots. Les liens Voir le projet et Etude de cas sont corrects.",
+      "EN ATTENTE - location_flexibility a ete volontairement reduit a 'Base a Casablanca'. Reintegrer la mention du teletravail dans les 3 langues si elle est reellement vraie : c'est une information utile pour un recruteur.",
+      "A TENIR A JOUR - availability.status et availability.last_verified, seules donnees qui periment vite.",
+      "Accents volontairement retires pour eviter tout risque d'encodage dans la config. Le contenu reste comprehensible."
+    ]
+  },
+
+  "identity": {
+    "full_name": "Sif-Eddine Laidi",
+    "short_name": "Sif-Eddine",
+    "title": {
+      "fr": "Developpeur Full Stack junior",
+      "en": "Junior Full Stack Developer",
+      "ar": "مطوّر ويب متكامل مبتدئ"
+    },
+    "location": {
+      "city": "Casablanca",
+      "country": "Maroc",
+      "country_en": "Morocco"
+    },
+    "website": "https://sifeddine00.github.io/"
+  },
+
+  "contact": {
+    "email": "sifeddinelaidi@gmail.com",
+    "phone": "+212 6 06 66 33 39",
+    "github": "https://github.com/sifeddine00",
+    "linkedin": "https://www.linkedin.com/in/sif-eddine-laidi-aa543a332",
+    "cv": "assets/cv.pdf"
+  },
+
+  "summary": {
+    "fr": "Developpeur full stack junior base a Casablanca, Maroc. Forme au developpement front-end et back-end (React, Node.js, PHP/Laravel, Spring Boot) et a la gestion de bases de donnees relationnelles et NoSQL. Auteur de plusieurs projets concrets, dont une plateforme de gestion des surveillances d'examens et une plateforme de gestion des ordonnances medicales. Curieux, rigoureux et autonome, il recherche un poste de developpeur full stack pour mettre ces competences au service de projets innovants.",
+    "en": "Junior full stack developer based in Casablanca, Morocco. Trained in front-end and back-end development (React, Node.js, PHP/Laravel, Spring Boot) and in relational and NoSQL database management. Author of several concrete projects, including an exam-supervision platform and a medical-prescription platform. Curious, rigorous and self-directed, he is looking for a full stack developer position to apply these skills to innovative projects.",
+    "ar": "مطوّر ويب متكامل مبتدئ، مقيم في الدار البيضاء بالمغرب. مدرَّب على تطوير الواجهات الأمامية والخلفية (React، Node.js، PHP/Laravel، Spring Boot) وعلى إدارة قواعد البيانات العلائقية وقواعد NoSQL. صاحب عدة مشاريع ملموسة، من بينها منصة لإدارة surveillances الامتحانات ومنصة لإدارة الوصفات الطبية. فضولي ومنهجي ومستقل، ويبحث عن وظيفة مطوّر ويب متكامل لوضع هذه المهارات في خدمة مشاريع مبتكرة."
+  },
+
+  "availability": {
+    "status": "open_to_offers",
+    "status_note": "Valeurs possibles : actively_looking | open_to_offers | not_looking. A tenir a jour manuellement, c'est la seule donnee qui perime vite.",
+    "last_verified": "2026-09-28",
+    "looking_for": {
+      "fr": "Un poste de developpeur full stack",
+      "en": "A full stack developer position",
+      "ar": "وظيفة مطوّر ويب متكامل"
+    },
+    "open_to": [
+      "Poste de developpeur full stack"
+    ],
+    "location_flexibility": {
+      "fr": "Base a Casablanca.",
+      "en": "Based in Casablanca.",
+      "ar": "مقيم في الدار البيضاء."
+    },
+    "instruction": "Pour toute question de disponibilite, de recrutement, de salaire ou de prise de contact, oriente toujours vers le contact direct (email en priorite) et propose explicitement de poser la question par e-mail. Ne promets jamais de disponibilite, de date, ni de reponse."
+  },
+
+  "skills": [
+    {
+      "category": "Front-end",
+      "items": ["HTML", "CSS", "JavaScript", "React", "Bootstrap"]
+    },
+    {
+      "category": "Back-end",
+      "items": ["Node.js", "PHP", "Laravel", "Spring Boot"]
+    },
+    {
+      "category": "Bases de donnees",
+      "items": ["MySQL", "PostgreSQL", "MongoDB", "Oracle"]
+    },
+    {
+      "category": "Versioning",
+      "items": ["Git", "GitHub", "GitLab"]
+    },
+    {
+      "category": "API",
+      "items": ["Creation et integration d'API RESTful"]
+    },
+    {
+      "category": "Outils",
+      "items": ["Docker", "Postman", "CI/CD", "Keycloak", "Hostinger"]
+    },
+    {
+      "category": "Data",
+      "items": ["Power BI", "Web Mining"]
+    },
+    {
+      "category": "Intelligence Artificielle",
+      "items": ["Systemes multi-agents", "Prompt Engineering (framework CoStar)", "OCR", "Python"]
+    }
+  ],
+
+  "languages": [
+    { "name": "Arabe", "name_en": "Arabic", "level": "Natif", "level_en": "Native", "score": 100 },
+    { "name": "Francais", "name_en": "French", "level": "Courant", "level_en": "Fluent", "score": 85 },
+    { "name": "Anglais", "name_en": "English", "level": "Conversationnel", "level_en": "Conversational", "score": 60 }
+  ],
+
+  "interests": ["Natation", "Lecture", "Football"],
+
+  "timeline": [
+    {
+      "date": "2025 - 2026",
+      "title": "Licence professionnelle en Developpement informatique",
+      "place": "Ecole Supemir",
+      "detail": "Formation specialisee en developpement logiciel et informatique.",
+      "type": "Diplome"
+    },
+    {
+      "date": "15/05/2026 - 15/08/2026",
+      "title": "Stage de fin d'etudes",
+      "place": "Faculte des Sciences Ben M'Sik, Casablanca",
+      "detail": "Developpement d'une plateforme de gestion des surveillances d'examens avec React, Spring Boot et Keycloak.",
+      "type": "Stage"
+    },
+    {
+      "date": " Debut 2026",
+      "title": "Hackathon IA Generative et Agentique",
+      "place": "Capgemini Maroc - equipe FiveLinks",
+      "detail": "Solution multi-agents (Intake, Classification, Extraction, Validation, Decision) pour l'automatisation du traitement documentaire, avec OCR et prompt engineering (CoStar). Finaliste Top 5 sur 85 equipes.",
+      "type": "Distinction"
+    },
+    {
+      "date": "2023 - 2025",
+      "title": "Technicien specialise - Developpement digital",
+      "place": "ISTAG, Sidi Moumen, Casablanca",
+      "detail": "Option web full stack : developpement front-end et back-end, base de donnees et conception web.",
+      "type": "Diplome"
+    },
+    {
+      "date": "01/03/2024 - 01/04/2024",
+      "title": "Stage - Plateforme d'ordonnances medicales",
+      "place": "Casablanca",
+      "detail": "Developpement d'une plateforme de gestion des ordonnances medicales avec React et Laravel, incluant la generation automatique de PDF.",
+      "type": "Stage"
+    },
+    {
+      "date": "2022 - 2023",
+      "title": "Baccalaureat international",
+      "place": "Lycee Zineb Nefzawiya, Casablanca",
+      "detail": "Option Sciences physiques.",
+      "type": "Diplome"
+    }
+  ],
+
+  "projects": [
+    {
+      "id": "project1",
+      "title": "Plateforme de surveillance d'examens",
+      "category": "stage",
+      "badge": "Stage de fin d'etudes",
+      "period": "15/05/2026 - 15/08/2026",
+      "place": "Faculte des Sciences Ben M'Sik",
+      "description": "Planification automatisee, affectation des surveillants et suivi en temps reel des sessions d'examen. Authentification et gestion des roles avec Keycloak.",
+      "tech": ["React", "Spring Boot", "Keycloak", "PostgreSQL"],
+      "highlights": [
+        "Planification automatisee des sessions d'examen",
+        "Affectation automatique des surveillants",
+        "Suivi en temps reel",
+        "Authentification et gestion des roles via Keycloak"
+      ],
+      "metrics": ["3 modules", "+40 surveillants", "Suivi temps reel"],
+      "case_study_url": "project1.html"
+    },
+    {
+      "id": "project2",
+      "title": "Plateforme d'ordonnances medicales",
+      "category": "stage",
+      "badge": "Stage",
+      "period": "01/03/2024 - 01/04/2024",
+      "place": "Casablanca",
+      "description": "Gestion des ordonnances medicales avec generation automatique de PDF. Conception de l'interface utilisateur et integration de l'API back-end.",
+      "tech": ["React", "Laravel", "MySQL", "PDF"],
+      "highlights": [
+        "Generation automatique de PDF",
+        "Operations CRUD sur les patients",
+        "Integration de l'API back-end",
+        "Conception de l'interface utilisateur"
+      ],
+      "metrics": ["PDF auto", "CRUD patients", "API integration"],
+      "case_study_url": "project2.html"
+    },
+    {
+      "id": "project3",
+      "title": "Solution documentaire multi-agents",
+      "category": "hackathon",
+      "badge": "Hackathon - Finaliste Top 5/85",
+      "period": "Debut 2026",
+      "place": "Capgemini Maroc, equipe FiveLinks",
+      "description": "Automatisation du traitement documentaire avec raisonnement et prise de decision autonome (Intake, Classification, Extraction, Validation). Integration OCR et prompt engineering (framework CoStar).",
+      "tech": ["Python", "Django", "OCR", "Multi-agents"],
+      "highlights": [
+        "4 agents specialises : Intake, Classification, Extraction, Validation",
+        "Traitement OCR de documents",
+        "Prompt engineering avec le framework CoStar",
+        "Classement Top 5 sur 85 equipes au Hackathon IA Generative et Agentique de Capgemini Maroc"
+      ],
+      "metrics": ["4 agents", "OCR traitement", "Top 5/85"],
+      "case_study_url": "project3.html"
+    },
+    {
+      "id": "project4",
+      "title": "Plateforme d'apprentissage et d'evaluation",
+      "category": "academique",
+      "badge": "Projet academique",
+      "period": "09/2024 - 09/2025",
+      "place": "Academique",
+      "description": "Plateforme educative numerique : gestion integree des cours, des exercices et des statistiques de progression des apprenants.",
+      "tech": ["React", "Spring Boot", "Keycloak", "MySQL"],
+      "highlights": [
+        "Gestion integree des cours et des quiz",
+        "Statistiques de progression des apprenants",
+        "Gestion des roles utilisateurs",
+        "Authentification via Keycloak"
+      ],
+      "metrics": ["Cours+Quiz contenus", "Stats progression", "Roles utilisateurs"],
+      "case_study_url": "project4.html"
+    }
+  ],
+
+  "personality": {
+    "traits": {
+      "fr": ["Curieux", "Rigoureux", "Autonome"],
+      "en": ["Curious", "Rigorous", "Self-directed"],
+      "ar": ["فضولي", "منهجي", "مستقل"]
+    }
+  }
+}

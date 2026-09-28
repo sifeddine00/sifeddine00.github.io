@@ -1,0 +1,27 @@
+# Secrets — ne JAMAIS committer
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+*.pem
+*.key
+
+# Wrangler / Cloudflare
+.wrangler/
+ai-api/.dev.vars
+
+# Node
+node_modules/
+npm-debug.log*
+.npm
+
+# Brouillons IA (générés localement par tools/generate-content.mjs)
+content/drafts/
+
+# Notes de travail de l'agent, sans rapport avec le site
+.opencode/
+
+# Système
+Thumbs.db
+desktop.ini
+.DS_Store
