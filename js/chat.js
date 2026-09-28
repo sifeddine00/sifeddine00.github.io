@@ -16,7 +16,7 @@
     return url ? url.replace(/\/+$/, "") : "";
   })();
 
-  const STORAGE_KEY = "portfolio-chat-v1";
+  const STORAGE_KEY = "sif_chat-v1";
   const MAX_STORED = 12; // 6 allers-retours
   const MAX_SEND_CHARS = 1200;
   const HEALTH_TIMEOUT = 4000;
