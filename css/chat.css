@@ -414,6 +414,50 @@
   display: none;
 }
 
+/* ---------- Bandeau de quota ---------- */
+
+/* Deux usages : etat informatif (questions restantes) et blocage (compte a
+   rebours, message d'erreur). La couleur porte le sens, pas seulement la
+   decoration, pour rester lisible sans dependre de la teinte. */
+
+.chat-notice {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-2) 80%, var(--accent) 4%);
+  border-top: 1px solid var(--border);
+  border-inline-start: 2px solid var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-notice[hidden] {
+  display: none;
+}
+
+.chat-notice.is-warn {
+  color: var(--text);
+  border-inline-start-color: var(--accent-strong);
+  background: color-mix(in srgb, var(--surface-2) 80%, var(--accent) 12%);
+}
+
+.chat-notice.is-error {
+  color: var(--text);
+  border-inline-start-color: var(--danger);
+  background: color-mix(in srgb, var(--surface-2) 88%, var(--danger) 12%);
+}
+
+/* Bouton envoyer bloque : on garde la forme, on retire l'apparence active. */
+
+.chat-send.is-blocked {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* ---------- Suggestions ---------- */
 
 .chat-suggestions {

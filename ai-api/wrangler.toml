@@ -16,13 +16,36 @@ workers_dev = true
 # --- Secrets (a definir via `wrangler.cmd secret put`, jamais dans ce fichier) ---
 # HF_TOKEN              token Hugging Face, permission "Make calls to Inference Providers"
 # ALLOWED_ORIGINS       origines autorisees, separees par des virgules
-# CHAT_MODEL            optionnel, par defaut Qwen/Qwen3-4B-Instruct-2507
+# CHAT_MODEL            optionnel, par defaut Qwen3-4B-Instruct-2507
 # CHAT_MAX_TOKENS       optionnel, par defaut 450
+# CHAT_RATE_IP          optionnel, requetes par IP et par fenetre (defaut 10)
+# CHAT_RATE_GLOBAL      optionnel, requetes par jour tous visiteurs (defaut 40)
+# CHAT_RATE_WINDOW_SEC  optionnel, duree de la fenetre IP en secondes (defaut 300)
 
 # --- Rate limiting ---
+# Plafonds par defaut, surchargeables ci-dessous (secrets ou vars).
+# Ils ne sont pas des credentials : inutile de les chiffrer, et les valeurs
+# de fallback restent dans worker.js si la var est absente.
+#
+#   CHAT_RATE_IP           requetes par IP et par fenetre   defaut 10
+#   CHAT_RATE_GLOBAL       requetes par jour, tous visiteurs  defaut 40
+#   CHAT_RATE_WINDOW_SEC   duree de la fenetre IP, en secondes  defaut 300
+#
+# Surcharger avec `wrangler.cmd var put CHAT_RATE_IP 15` etc.
+# Cf. README.md pour la relation avec le plafond d'ecritures KV.
+#
+# RATE_LIMIT_DISABLED = "true" coupe le comptage (utile en dev local, ou
+# RATE_LIMIT_DISABLED est pose dans .dev.vars). Ne jamais le poser en prod.
+#
+# [vars]
+# CHAT_RATE_IP = "10"
+# CHAT_RATE_GLOBAL = "100"
+# CHAT_RATE_WINDOW_SEC = "300"
+
 # Limite KV gratuite : 100 000 lectures/jour, 1 000 ECRITURES/jour.
-# Chaque requete de chat = 2 ecritures (compteur global + compteur IP).
-# globalPerDay dans worker.js est donc plafonne a 500 pour rester sous la limite.
+# Chaque requete de chat acceptee = 2 ecritures (compteur global + compteur IP).
+# Les echecs amont remboursent la place IP, ce qui reduit les ecritures.
+# CHAT_RATE_GLOBAL est donc plafonne a 500 pour rester sous la limite.
 [[kv_namespaces]]
 binding = "CHAT"
 id = "05f8cfd0da50463a8714d28f1943eb0a"

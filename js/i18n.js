@@ -195,6 +195,10 @@
       "chat.disclaimer": "Réponses générées par IA, susceptible de contenir des erreurs.",
       "chat.error_generic": "Une erreur est survenue. Réessayez dans un instant.",
       "chat.error_rate": "Trop de requêtes envoyées. Patientez quelques minutes puis réessayez.",
+      "chat.error_rate_daily": "Le quota quotidien de l'assistant IA est atteint pour aujourd'hui. Réessayez demain.",
+      "chat.error_rate_upstream": "Le service IA est momentanément saturé. Réessayez dans quelques minutes.",
+      "chat.retry_in": "Réessayer dans {time}",
+      "chat.quota_left": "{n} questions restantes aujourd'hui",
       "chat.error_request": "Message trop long ou invalide. Reformulez plus brièvement.",
       "chat.error_network": "Connexion à l'API impossible. Vérifiez votre réseau.",
       "chat.error_quota": "Le quota gratuit de l'IA est momentanément épuisé.",
@@ -392,6 +396,10 @@
       "chat.disclaimer": "AI-generated answers, may contain mistakes.",
       "chat.error_generic": "Something went wrong. Please try again in a moment.",
       "chat.error_rate": "Too many requests sent. Wait a few minutes and try again.",
+      "chat.error_rate_daily": "The AI assistant's daily quota is used up for today. Try again tomorrow.",
+      "chat.error_rate_upstream": "The AI service is temporarily saturated. Try again in a few minutes.",
+      "chat.retry_in": "Try again in {time}",
+      "chat.quota_left": "{n} questions left today",
       "chat.error_request": "Message too long or invalid. Please rephrase more briefly.",
       "chat.error_network": "Could not reach the API. Check your connection.",
       "chat.error_quota": "The free AI quota is temporarily exhausted.",
@@ -589,6 +597,10 @@
       "chat.disclaimer": "إجابات مولّدة بالذكاء الاصطناعي وقد تحتوي على أخطاء.",
       "chat.error_generic": "حدث خطأ ما. أعد المحاولة بعد لحظات.",
       "chat.error_rate": "تم إرسال طلبات كثيرة. انتظر بضع دقائق ثم أعد المحاولة.",
+      "chat.error_rate_daily": "تم استنفاد الحصة اليومية للمساعد الذكي اليوم. أعد المحاولة غداً.",
+      "chat.error_rate_upstream": "خدمة الذكاء الاصطناعي مشغولة مؤقتاً. أعد المحاولة بعد بضع دقائق.",
+      "chat.retry_in": "أعد المحاولة بعد {time}",
+      "chat.quota_left": "{n} أسئلة متبقية اليوم",
       "chat.error_request": "الرسالة طويلة أو غير صالحة. أعد الصياغة بشكل أكثر إيجازاً.",
       "chat.error_network": "تعذّر الوصول إلى الواجهة البرمجية. تحقق من اتصالك.",
       "chat.error_quota": "الحصة المجانية للذكاء الاصطناعي مستنفدة مؤقتاً.",
@@ -625,7 +637,19 @@
     }
   };
 
-  const t = (key) => translations[key] || key;
+  // vars est optionnel : les valeurs sont inserees via textContent par
+  // l'appelant, jamais par innerHTML, donc aucun caractere n'est interprete.
+  // Seuls les marqueurs {cle} presents dans la chaine sont remplaces.
+  const t = (key, vars) => {
+    const raw = translations[key];
+    if (raw === undefined) return key;
+    if (!vars) return raw;
+    return String(raw).replace(/\{(\w+)\}/g, (match, name) =>
+      Object.prototype.hasOwnProperty.call(vars, name)
+        ? String(vars[name])
+        : match
+    );
+  };
 
   const applyToDOM = () => {
     document.querySelectorAll("[data-i18n]").forEach((el) => {

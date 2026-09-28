@@ -38,8 +38,10 @@
   // Utilitaires
   // ---------------------------------------------------------------------
 
-  const t = (key) =>
-    window.i18n && typeof window.i18n.t === "function" ? window.i18n.t(key) : key;
+  const t = (key, vars) =>
+    window.i18n && typeof window.i18n.t === "function"
+      ? window.i18n.t(key, vars)
+      : key;
 
   const lang = () =>
     window.i18n && typeof window.i18n.getLang === "function"
@@ -158,12 +160,19 @@
   // ---------------------------------------------------------------------
 
   let fab, panel, messagesEl, typingEl, suggestionsEl, inputEl, sendBtn;
-  let statusEl, titleEl, avatarInitial, badge, fallbackEl, liveRegion;
+  let statusEl, titleEl, avatarInitial, badge, fallbackEl, liveRegion, noticeEl;
   let isOpen = false;
   let streaming = false;
   let userStopped = false;
   let abortController = null;
   let online = null; // null = inconnu, true, false
+
+  // Blocage temporaire apres un 429 IP : l'API renvoie la seconde exacte de
+  // levee, on ne propose donc pas de reessayer avant.
+  let cooldownUntil = 0;
+  let cooldownTimer = null;
+  // Blocage jusqu'a demain quand le quota du jour est epuise.
+  let quotaExhausted = false;
 
   function build() {
     // --- Bouton flottant ---
@@ -240,6 +249,12 @@
     // Mention IA
     panel.appendChild(el("p", "chat-disclaimer"));
 
+    // Bandeau de quota : nombre de questions restantes, ou compte a rebours
+    // quand l'API vient de refuser une requete.
+    noticeEl = el("div", "chat-notice");
+    noticeEl.hidden = true;
+    panel.appendChild(noticeEl);
+
     // Repli
     fallbackEl = el("div", "chat-fallback");
     fallbackEl.hidden = true;
@@ -315,6 +330,15 @@
     updateStatus();
     renderSuggestions();
     renderFallback();
+    // Le bandeau contient un compte a rebours : il doit suivre la langue.
+    if (!noticeEl.hidden && noticeEl.textContent) {
+      if (cooldownUntil > Date.now()) {
+        const left = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        showNotice(t("chat.retry_in", { time: formatCountdown(left) }), "warn");
+      } else if (quotaExhausted) {
+        showNotice(t("chat.error_rate_daily"), "error");
+      }
+    }
   }
 
   function updateStatus() {
@@ -427,6 +451,8 @@
     fallbackEl.hidden = true;
     renderSuggestions();
     addMessage("bot", t("chat.greeting"));
+    // Le compteur de quota n'est pas dans l'historique : on le redemande.
+    checkHealth();
     inputEl.focus();
   }
 
@@ -449,10 +475,127 @@
       });
       clearTimeout(timer);
       online = res.ok;
+
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data) applyQuota(data);
+      }
     } catch {
       online = false;
     }
     updateStatus();
+    syncSendState();
+  }
+
+  // ---------------------------------------------------------------------
+  // Quota : bandeau + desactivation temporaire de la saisie
+  // ---------------------------------------------------------------------
+
+  // Le compteur est decremente a chaque envoi envoye au Worker, pas a chaque
+  // reponse affichee : c'est ce que l'API compte reellement.
+  function applyQuota(data) {
+    if (typeof data.ip_retry_after_sec === "number" && data.ip_remaining <= 0) {
+      const left = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      const seconds = Math.max(data.ip_retry_after_sec, left);
+      startCooldown(seconds);
+      return;
+    }
+    if (typeof data.remaining_today === "number" && data.remaining_today <= 0) {
+      quotaExhausted = true;
+      showNotice(t("chat.error_rate_daily"), "error");
+      blockInput(t("chat.error_rate_daily"));
+      return;
+    }
+    // Le compteur du jour est de nouveau disponible : on leve le blocage dur.
+    if (quotaExhausted) {
+      quotaExhausted = false;
+      clearNotice();
+    }
+    if (typeof data.remaining_today === "number") {
+      showNotice(t("chat.quota_left", { n: data.remaining_today }), "info");
+    }
+  }
+
+  function showNotice(text, kind) {
+    if (!noticeEl) return;
+    noticeEl.textContent = text;
+    // Les deux variantes doivent se remplacer mutuellement : un ancien
+    // is-warn resterait sinon sur un message d'erreur.
+    noticeEl.classList.toggle("is-warn", kind === "warn");
+    noticeEl.classList.toggle("is-error", kind === "error");
+    noticeEl.hidden = false;
+  }
+
+  function clearNotice() {
+    if (!noticeEl) return;
+    noticeEl.hidden = true;
+    noticeEl.textContent = "";
+  }
+
+  function startCooldown(seconds) {
+    cooldownUntil = Date.now() + Math.max(1, seconds) * 1000;
+    // Desactivation immediate de la saisie, pas seulement a l'echange du
+    // prochain titre : un envoi pendant le compte a rebours serait refuse.
+    blockInput(t("chat.retry_in", { time: formatCountdown(seconds) }));
+
+    if (cooldownTimer) clearInterval(cooldownTimer);
+    cooldownTimer = setInterval(() => {
+      const left = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (left <= 0) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+        cooldownUntil = 0;
+        clearNotice();
+        syncSendState();
+        checkHealth(); // confirme la levee aupres de l'API
+        return;
+      }
+      showNotice(t("chat.retry_in", { time: formatCountdown(left) }), "warn");
+      syncSendState();
+    }, 1000);
+
+    showNotice(t("chat.retry_in", { time: formatCountdown(seconds) }), "warn");
+    syncSendState();
+  }
+
+  function formatCountdown(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m <= 0) return String(s) + "s";
+    return m + ":" + String(s).padStart(2, "0");
+  }
+
+  // Desactive la saisie ET le bouton d'envoi : un appel envoye pendant un
+  // cooldown serait refuse par l'API, donc inutile et comptabilise quand meme
+  // comme une tentative.
+  function blockInput(reason) {
+    if (streaming) return; // la transaction en cours n'est pas interrompue
+    if (inputEl) inputEl.disabled = true;
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.classList.add("is-blocked");
+      sendBtn.setAttribute("aria-label", reason || t("chat.send"));
+      sendBtn.setAttribute("title", reason || t("chat.send"));
+    }
+  }
+
+  // Reapplique l'etat de blocage apres un changement de langue ou la fin du
+  // streaming. Sans le test quotaExhausted, la fin du compte a rebours
+  // reautoriserait la saisie alors que le quota du jour est toujours epuise.
+  function syncSendState() {
+    if (streaming || !inputEl || !sendBtn) return;
+
+    if (quotaExhausted) {
+      blockInput(t("chat.error_rate_daily"));
+      return;
+    }
+    if (cooldownUntil > Date.now()) return; // l'intervalle met a jour le texte
+
+    inputEl.disabled = false;
+    sendBtn.classList.remove("is-blocked");
+    sendBtn.removeAttribute("aria-label");
+    sendBtn.removeAttribute("title");
+    onInput();
   }
 
   // ---------------------------------------------------------------------
@@ -501,7 +644,11 @@
       // Le bouton reste cliquable : il sert alors a interrompre le flux.
       sendBtn.setAttribute("aria-label", t("chat.stop"));
       sendBtn.setAttribute("title", t("chat.stop"));
+    } else if (quotaExhausted || cooldownUntil > Date.now()) {
+      // La saisie reste bloquee : le bandeau affiche deja la raison.
+      syncSendState();
     } else {
+      sendBtn.classList.remove("is-blocked");
       sendBtn.removeAttribute("aria-label");
       sendBtn.removeAttribute("title");
       onInput();
@@ -533,6 +680,10 @@
 
     const text = inputEl.value.trim().slice(0, MAX_SEND_CHARS);
     if (!text) return;
+
+    // Quota atteint : on refuse l'envoi localement plutot que de subir un
+    // nouveau 429. Le message de l'API a deja ete affiche dans le bandeau.
+    if (quotaExhausted || cooldownUntil > Date.now()) return;
 
     // Repli actif : on oriente vers le contact au lieu d'appeler l'API
     if (!fallbackEl.hidden) {
@@ -582,6 +733,7 @@
     }, STREAM_TIMEOUT);
 
     let failure = null;
+    let failureDetail = null;
 
     try {
       const payload = {
@@ -600,13 +752,16 @@
 
       if (!res.ok || !res.body) {
         let code = "http_" + res.status;
+        let detail = null;
         try {
           const data = await res.json();
           if (data && data.error) code = data.error;
+          detail = data;
         } catch {
           /* pas de corps JSON */
         }
         failure = code;
+        failureDetail = detail;
       } else {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -662,20 +817,23 @@
 
     if (failure) {
       botNode.remove();
-      if (FALLBACK_CODES.has(failure)) {
-        showFallback(failure);
-      } else if (failure === "network_error") {
-        showFallback(failure);
-      } else {
-        const msg =
-          failure === "rate_limited" || failure === "http_429"
-            ? t("chat.error_rate")
-            : failure === "invalid_request"
-            ? t("chat.error_request")
-            : t("chat.error_generic");
-        addMessage("error", msg);
-        announce(msg);
+
+      if (failure === "rate_limited" || failure === "http_429") {
+        handleRateLimit(failureDetail, failure);
+        return;
       }
+
+      if (FALLBACK_CODES.has(failure) || failure === "network_error") {
+        showFallback(failure);
+        return;
+      }
+
+      const msg =
+        failure === "invalid_request"
+          ? t("chat.error_request")
+          : t("chat.error_generic");
+      addMessage("error", msg);
+      announce(msg);
       return;
     }
 
@@ -691,6 +849,48 @@
     renderMessage(botNode, answer);
     scrollToBottom();
     announce(answer);
+  }
+
+  // Un 429 a trois origines distinctes, et une seule depend du Worker.
+  // Chacune a son propre message : dire "reessayez dans 5 minutes" alors que le
+  // quota du jour est epuise est le bug d'origine de ce bandeau.
+  function handleRateLimit(detail, code) {
+    const scope = detail && detail.scope;
+
+    if (scope === "global" || (detail && detail.remaining_today === 0)) {
+      quotaExhausted = true;
+      showNotice(t("chat.error_rate_daily"), "error");
+      blockInput(t("chat.error_rate_daily"));
+      announce(t("chat.error_rate_daily"));
+      return;
+    }
+
+    if (scope === "upstream") {
+      const msg = t("chat.error_rate_upstream");
+      addMessage("error", msg);
+      announce(msg);
+      return;
+    }
+
+    // scope "ip" : l'Worker renvoie la seconde exacte de levee. Si le corps est
+    // vide (ancien deploiement, ou 429 d'un proxy), on retombe sur la fenetre
+    // de 5 minutes plutot que d'afficher un message muet.
+    const seconds =
+      detail && typeof detail.retry_after_sec === "number"
+        ? detail.retry_after_sec
+        : 300;
+
+    if (code === "http_429") {
+      // Aucune information exploitable : un message classique vaut mieux
+      // qu'un compte a rebours fabrique.
+      const msg = t("chat.error_rate");
+      addMessage("error", msg);
+      announce(msg);
+      return;
+    }
+
+    startCooldown(seconds);
+    announce(t("chat.retry_in", { time: formatCountdown(seconds) }));
   }
 
   function showFallback(code) {

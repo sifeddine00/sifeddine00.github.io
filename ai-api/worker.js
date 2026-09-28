@@ -150,47 +150,111 @@ Tu reponds en ${LANG_NAMES[lang] || "French"}.
 // Rate limiting via KV
 // ---------------------------------------------------------------------------
 
+// --- Plafonds surcharges par variable d'environnement (wrangler.toml) ---
+// Voir README.md. Un secret chiffre est inutile ici : ce sont des valeurs de
+// configuration, pas des credentials.
+
+function limits(env) {
+  const num = (raw, fallback) => {
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+  };
+  return {
+    perIp: num(env.CHAT_RATE_IP, DEFAULTS.perIpPerWindow),
+    perDay: num(env.CHAT_RATE_GLOBAL, DEFAULTS.globalPerDay),
+    windowSec: num(env.CHAT_RATE_WINDOW_SEC, DEFAULTS.perIpWindowSec),
+  };
+}
+
+function rateLimitDisabled(env) {
+  return env.RATE_LIMIT_DISABLED === "true" || env.RATE_LIMIT_DISABLED === "1";
+}
+
 function dayKey() {
   return new Date().toISOString().slice(0, 10); // AAAA-MM-JJ
 }
 
-function ipWindowKey(ip) {
-  const bucket = Math.floor(Date.now() / (DEFAULTS.perIpWindowSec * 1000));
-  return `ip:${ip}:${bucket}`;
+// La fenetre est un seau d'alignement sur epoch : toutes les IP repondent sur la
+// meme frontiere, ce qui evite qu'un visiteur decale la sienne indefiniment.
+function ipWindowStart(env) {
+  const windowSec = limits(env).windowSec;
+  return Math.floor(Date.now() / (windowSec * 1000)) * windowSec;
+}
+
+function ipWindowKey(env, ip) {
+  return `ip:${ip}:${ipWindowStart(env)}`;
+}
+
+// Secondes restantes avant que le seau IP courant n'expire, au moins 1.
+function ipRetryAfter(env) {
+  const windowSec = limits(env).windowSec;
+  const elapsed = Math.floor(Date.now() / 1000) - ipWindowStart(env);
+  return Math.max(1, windowSec - elapsed);
+}
+
+async function readCounters(env, ip) {
+  const [global, ipCount] = await Promise.all([
+    env.CHAT.get(`global:${dayKey()}`, { type: "json" }),
+    env.CHAT.get(ipWindowKey(env, ip), { type: "json" }),
+  ]);
+  return {
+    global: (global && global.n) || 0,
+    ip: (ipCount && ipCount.n) || 0,
+  };
 }
 
 async function checkRateLimit(env, ip) {
-  const globalKey = `global:${dayKey()}`;
-
-  const [global, ipCount] = await Promise.all([
-    env.CHAT.get(globalKey, { type: "json" }),
-    env.CHAT.get(ipWindowKey(ip), { type: "json" }),
-  ]);
-
-  const globalCount = (global && global.n) || 0;
-  const ipCountValue = (ipCount && ipCount.n) || 0;
-
-  if (globalCount >= DEFAULTS.globalPerDay) {
-    return { ok: false, scope: "global" };
+  if (rateLimitDisabled(env)) {
+    return { ok: true, skipped: true };
   }
-  if (ipCountValue >= DEFAULTS.perIpPerWindow) {
-    return { ok: false, scope: "ip" };
+
+  const cfg = limits(env);
+  const counters = await readCounters(env, ip);
+
+  // Le quota global est verifie en premier : quand il est atteint, dire
+  // "reessaye dans 5 minutes" serait faux, c'est le lendemain qui retablit.
+  if (counters.global >= cfg.perDay) {
+    return { ok: false, scope: "global", remaining: 0 };
+  }
+  if (counters.ip >= cfg.perIp) {
+    return {
+      ok: false,
+      scope: "ip",
+      retryAfterSec: ipRetryAfter(env),
+      remaining: cfg.perDay - counters.global,
+    };
   }
 
   await Promise.all([
     env.CHAT.put(
-      globalKey,
-      JSON.stringify({ n: globalCount + 1 }),
+      `global:${dayKey()}`,
+      JSON.stringify({ n: counters.global + 1 }),
       { expirationTtl: DEFAULTS.globalTtlSec }
     ),
     env.CHAT.put(
-      ipWindowKey(ip),
-      JSON.stringify({ n: ipCountValue + 1 }),
-      { expirationTtl: DEFAULTS.ipWindowTtlSec }
+      ipWindowKey(env, ip),
+      JSON.stringify({ n: counters.ip + 1 }),
+      { expirationTtl: cfg.windowSec + DEFAULTS.ipWindowTtlSec }
     ),
   ]);
 
-  return { ok: true, remaining: DEFAULTS.globalPerDay - globalCount - 1 };
+  return { ok: true, remaining: cfg.perDay - counters.global - 1 };
+}
+
+// Un timeout ou un 5xx amont n'a consomme aucun token chez Hugging Face, donc la
+// place ip n'aurait pas du etre comptee. On la rend, sinon un service HF lent
+// vide le quota de tous les visiteurs sans qu'aucun n'ait obtenu de reponse.
+async function refundIpQuota(env, ip) {
+  if (rateLimitDisabled(env)) return;
+
+  const key = ipWindowKey(env, ip);
+  const counter = await env.CHAT.get(key, { type: "json" });
+  const n = (counter && counter.n) || 0;
+  if (n <= 0) return;
+
+  await env.CHAT.put(key, JSON.stringify({ n: n - 1 }), {
+    expirationTtl: limits(env).windowSec + DEFAULTS.ipWindowTtlSec,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -257,6 +321,22 @@ function corsHeaders(origin) {
   return h;
 }
 
+// env est indispensable ici : sans lui, ALLOWED_ORIGINS (secret) est ignore et
+// l'origine de production retombe sur la liste codee en dur. Une reponse d'erreur
+// JSON sans Access-Control-Allow-Origin est opaque pour le navigateur, qui leve
+// alors une erreur reseau au lieu de laisser le widget lire le code 429.
+function json(request, env, body, status, extraHeaders) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...corsHeaders(isAllowedOrigin(request, env)),
+      ...(extraHeaders || {}),
+    },
+  });
+}
+
 function isAllowedOrigin(request, env) {
   const origin = request.headers.get("Origin");
   if (!origin) return null; // appels serveur a serveur / curl
@@ -271,18 +351,6 @@ function parseOrigins(raw) {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-}
-
-function json(request, body, status, extraHeaders) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store",
-      ...corsHeaders(isAllowedOrigin(request, {})),
-      ...(extraHeaders || {}),
-    },
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -314,14 +382,14 @@ async function handleChat(request, env) {
   const origin = isAllowedOrigin(request, env);
 
   if (origin === false) {
-    return json(request, { error: "origin_not_allowed" }, 403);
+    return json(request, env, { error: "origin_not_allowed" }, 403);
   }
 
   let payload;
   try {
     payload = await request.json();
   } catch {
-    return json(request, { error: "invalid_json" }, 400);
+    return json(request, env, { error: "invalid_json" }, 400);
   }
 
   const lang = SUPPORTED_LANGS.includes(payload.lang)
@@ -330,35 +398,46 @@ async function handleChat(request, env) {
 
   const clean = sanitizeMessages(payload.messages);
   if (clean.error) {
-    return json(request, { error: "invalid_request", detail: clean.error }, 400);
+    return json(request, env, { error: "invalid_request", detail: clean.error }, 400);
   }
 
   if (!env.HF_TOKEN) {
     // Secret non configure : ce n'est pas un quota epuise mais une erreur de
     // deploiement. Le widget bascule quand meme sur son repli contact, car
     // "server_misconfigured" fait partie de ses codes de repli.
-    return json(request, { error: "server_misconfigured", detail: "HF_TOKEN missing" }, 503);
-  }
-
-  const rate = await checkRateLimit(env, getClientIp(request));
-  if (!rate.ok) {
     return json(
       request,
-      {
-        error: "rate_limited",
-        scope: rate.scope,
-        message:
-          rate.scope === "global"
-            ? "daily_limit_reached"
-            : "too_many_requests",
-      },
-      429
+      env,
+      { error: "server_misconfigured", detail: "HF_TOKEN missing" },
+      503
     );
+  }
+
+  const ip = getClientIp(request);
+  const rate = await checkRateLimit(env, ip);
+  if (!rate.ok) {
+    const body = {
+      error: "rate_limited",
+      scope: rate.scope,
+      remaining_today: rate.remaining,
+      message:
+        rate.scope === "global"
+          ? "daily_limit_reached"
+          : "too_many_requests",
+    };
+    // Le widget affiche un compte a rebours a partir de cette valeur, et
+    // "Retry-After" sert aux outils et au cache HTTP.
+    const extra = {};
+    if (rate.retryAfterSec) {
+      body.retry_after_sec = rate.retryAfterSec;
+      extra["Retry-After"] = String(rate.retryAfterSec);
+    }
+    return json(request, env, body, 429, extra);
   }
 
   const profileData = profile;
   if (!profileData) {
-    return json(request, { error: "server_misconfigured" }, 500);
+    return json(request, env, { error: "server_misconfigured" }, 500);
   }
 
   const body = {
@@ -397,8 +476,10 @@ async function handleChat(request, env) {
   } catch (err) {
     clearTimeout(timeout);
     const aborted = err && err.name === "AbortError";
+    await refundIpQuota(env, ip);
     return json(
       request,
+      env,
       { error: aborted ? "upstream_timeout" : "upstream_unreachable" },
       502
     );
@@ -414,22 +495,27 @@ async function handleChat(request, env) {
     console.log(`HF ${upstream.status} ${detail.slice(0, 300)}`);
   }
 
-  // 402 = credits epuises sur le compte HF. 403 = token sans permission Inference.
+  // 402 = credits epuises, 401/403 = token invalide, 429 = HF sature. Ces
+  // reponses ne declenchent aucune generation, mais elles signalent aussi un
+  // etat que le visiteur ne peut pas resoudre : les laisser compter evite de
+  // boucler sur une erreur permanente, et evite d'ouvrir une boucle
+  // d'ecritures KV a un tiers. Seuls les echecs ou HF n'a rien produit
+  // (timeout, injoignable, flux coupe) sont rembourses, plus haut.
   if (upstream.status === 402) {
     clearTimeout(timeout);
-    return json(request, { error: "quota_exhausted" }, 503);
+    return json(request, env, { error: "quota_exhausted" }, 503);
   }
   if (upstream.status === 401 || upstream.status === 403) {
     clearTimeout(timeout);
-    return json(request, { error: "hf_token_rejected" }, 500);
+    return json(request, env, { error: "hf_token_rejected" }, 500);
   }
   if (upstream.status === 429) {
     clearTimeout(timeout);
-    return json(request, { error: "rate_limited", scope: "upstream" }, 429);
+    return json(request, env, { error: "rate_limited", scope: "upstream" }, 429);
   }
   if (!upstream.ok || !upstream.body) {
     clearTimeout(timeout);
-    return json(request, { error: "upstream_error" }, 502);
+    return json(request, env, { error: "upstream_error" }, 502);
   }
 
   // --- Relai SSE ---
@@ -511,6 +597,8 @@ async function handleChat(request, env) {
         }
         send({ type: "done" });
       } catch (err) {
+        // Flux coupe avant la fin : rien n'a ete genere, la place est rendue.
+        refundIpQuota(env, ip).catch(() => {});
         send({
           type: "error",
           error: err && err.name === "AbortError" ? "upstream_timeout" : "stream_error",
@@ -545,12 +633,22 @@ async function handleChat(request, env) {
 async function handleHealth(request, env) {
   const origin = isAllowedOrigin(request, env);
   if (origin === false) {
-    return json(request, { error: "origin_not_allowed" }, 403);
+    return json(request, env, { error: "origin_not_allowed" }, 403);
   }
-  return json(request, {
+
+  const cfg = limits(env);
+  const counters = await readCounters(env, getClientIp(request));
+
+  return json(request, env, {
     ok: true,
     model: env.CHAT_MODEL || DEFAULTS.model,
     token_configured: Boolean(env.HF_TOKEN),
+    // Le widget sert ces deux champs pour desactiver la saisie avant meme
+    // d'envoyer, plutot que d'afficher une erreur apres coup.
+    rate_limit_disabled: rateLimitDisabled(env),
+    ip_remaining: Math.max(0, cfg.perIp - counters.ip),
+    ip_retry_after_sec: rateLimitDisabled(env) ? 0 : ipRetryAfter(env),
+    remaining_today: Math.max(0, cfg.perDay - counters.global),
   });
 }
 
@@ -573,10 +671,11 @@ export default {
       if (url.pathname === "/api/chat" && request.method === "POST") {
         return await handleChat(request, env);
       }
-      return json(request, { error: "not_found" }, 404);
+      return json(request, env, { error: "not_found" }, 404);
     } catch (err) {
       return json(
         request,
+        env,
         { error: "internal_error", detail: String(err && err.message) },
         500
       );

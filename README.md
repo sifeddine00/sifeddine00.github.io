@@ -57,6 +57,20 @@ détient. C'est la raison d'être du Worker, le site restant du HTML statique.
 | `ALLOWED_ORIGINS` | non | origines CORS, séparées par des virgules. Défaut : GitHub Pages + localhost |
 | `CHAT_MODEL` | non | modèle HF. Défaut : `Qwen/Qwen3-4B-Instruct-2507` |
 | `CHAT_MAX_TOKENS` | non | défaut : 450 |
+| `CHAT_RATE_IP` | non | requêtes par IP et par fenêtre. Défaut : 10 |
+| `CHAT_RATE_GLOBAL` | non | requêtes par jour, tous visiteurs confondus. Défaut : 40 |
+| `CHAT_RATE_WINDOW_SEC` | non | durée de la fenêtre IP, en secondes. Défaut : 300 |
+| `RATE_LIMIT_DISABLED` | non | `"true"` coupe le comptage. **Dev local uniquement** |
+
+Les trois `CHAT_RATE_*` sont des valeurs de configuration, pas des credentials :
+les poser en `var` suffit et elles restent lisibles dans `wrangler.toml`. Leur
+défaut est également codé en dur dans `worker.js`, donc une variable absente ne
+casse rien.
+
+```powershell
+wrangler.cmd var put CHAT_RATE_IP 15
+wrangler.cmd var put CHAT_RATE_GLOBAL 80
+```
 
 ### Points d'attention techniques
 
@@ -69,9 +83,20 @@ détient. C'est la raison d'être du Worker, le site restant du HTML statique.
   n'existe pas dans wrangler 4.86.0 (types acceptés : `ESModule`, `CommonJS`,
   `CompiledWasm`, `Text`, `Data`).
 - **Plafond KV** : le plan gratuit Cloudflare autorise **1 000 écritures/jour**.
-  Chaque requête de chat en consomme 2 (compteur global + compteur par IP).
-  `globalPerDay = 40` dans `worker.js` reste donc largement sous la limite.
-  Passé ce plafond, ne pas l'augmenter sans repenser le compteur.
+  Chaque requête acceptée en consomme 2 (compteur global + compteur IP), et le
+  remboursement d'un échec amont en rajoute 2. `CHAT_RATE_GLOBAL = 40` par défaut
+  reste largement sous la limite, et son plafond théorique est 500. Ne pas
+  l'augmenter sans repenser le compteur.
+- **Fenêtre IP alignée sur l'époque** : le seau est
+  `floor(now / windowSec) * windowSec`, donc toutes les IP basculent à la même
+  frontière. Un visiteur ne peut pas faire glisser indéfiniment sa fenêtre.
+- **Le KV local de `wrangler dev` survit aux redémarrages**, en plus de
+  Cloudflare répliquer les données en écriture. Un compteur peut donc être
+  incrémenté deux fois pour une même requête en dev local — d'où
+  `RATE_LIMIT_DISABLED="true"` dans `.dev.vars`. En production, écrire la valeur
+  directement dans le KV distant n'est pas possible de façon atomique ; le
+  risque de dépassement est faible (deux requêtes concurrentes) et le plafond de
+1 000 écritures/jour absorbe l'écart.
 
 ---
 
@@ -80,11 +105,24 @@ détient. C'est la raison d'être du Worker, le site restant du HTML statique.
 ### `GET /api/health`
 
 ```json
-{ "ok": true, "model": "Qwen/Qwen3-4B-Instruct-2507", "token_configured": true }
+{
+  "ok": true,
+  "model": "Qwen/Qwen3-4B-Instruct-2507",
+  "token_configured": true,
+  "rate_limit_disabled": false,
+  "ip_remaining": 8,
+  "ip_retry_after_sec": 214,
+  "remaining_today": 31
+}
 ```
 
 `token_configured: false` signale un déploiement incomplet. Utilisé par le widget
 pour afficher l'état en ligne / indisponible.
+
+Les quatre derniers champs permettent au widget de **désactiver la saisie avant
+l'envoi** au lieu d'afficher une erreur après coup : `ip_remaining` à 0 démarre
+un compte à rebours de `ip_retry_after_sec` secondes, `remaining_today` à 0
+bloque jusqu'au lendemain.
 
 ### `POST /api/chat`
 
@@ -117,6 +155,45 @@ Le repli affiche email, GitHub et LinkedIn. Il est **intentionnel** : le quota
 gratuit est petit, et un visiteur qui n'obtient pas de réponse doit avoir un
 chemin vers un contact humain.
 
+### Les trois origines de `rate_limited`
+
+Un 429 ne dit pas la même chose selon qui l'a renvoyé. Le champ `scope` les
+distingue, et le widget affiche un message différent pour chacune — un seul
+« patientez quelques minutes » pour le quota du jour était trompeur, il faut
+attendre le lendemain.
+
+| `scope` | Origine | Réponse du widget |
+|---|---|---|
+| `ip` | fenêtre IP épuisée | compte à rebours `mm:ss`, puis réactivation automatique |
+| `global` | quota du jour atteint (tous visiteurs) | « réessayez demain », saisie bloquée |
+| `upstream` | HF a renvoyé 429 | message transitoire, aucune pénalité côté quota local |
+
+Corps d'une réponse 429 :
+
+```json
+{
+  "error": "rate_limited",
+  "scope": "ip",
+  "remaining_today": 31,
+  "message": "too_many_requests",
+  "retry_after_sec": 214
+}
+```
+
+`retry_after_sec` est aussi renvoyé en en-tête `Retry-After`. Il est absent
+pour `scope: "global"` : aucune attente courte n'y aiderait.
+
+### Remboursement de la place IP
+
+Le quota IP est consommé avant l'appel HF, puis **remboursé** quand HF n'a rien
+produit : timeout, injoignable, flux coupé. Sans ce remboursement, une période de
+lenteur de Hugging Face vidait le quota de tous les visiteurs alors que personne
+n'avait reçu de réponse.
+
+Les codes 401, 402, 403 et 429 de HF ne sont **pas** remboursés. Ils signalent un
+état que le visiteur ne peut pas résoudre, et les rembourser ouvrirait une boucle
+d'écritures KV gratuite pour un tiers (chaque requête en coûte 2).
+
 ---
 
 ## Développement local
@@ -132,6 +209,20 @@ wrangler.cmd dev --port 8787
 
 # 2. site local, dans un second terminal
 python -m http.server 8000
+```
+
+Pour tester les 429 sans attendre 5 minutes, surcharger les variables en ligne
+de commande — elles priment sur `.dev.vars` :
+
+```powershell
+# limite IP a 3, fenetre de 20 s, pour voir le compte a rebours du widget
+wrangler.cmd dev --port 8787 --var CHAT_RATE_IP:3 --var CHAT_RATE_WINDOW_SEC:20
+```
+
+Vider le KV local pour repartir de zéro :
+
+```powershell
+Remove-Item -Recurse -Force ai-api\.wrangler\state\v3\kv
 ```
 
 `http://localhost:8000` et `http://127.0.0.1:8000` sont déjà dans les origines
