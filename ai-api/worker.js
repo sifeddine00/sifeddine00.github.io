@@ -34,7 +34,7 @@ const DEFAULTS = {
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8080",
   ],
-  model: "llama-3.1-8b-instant",
+  model: "llama-3.3-70b-versatile",
   maxTokens: 700,
   temperature: 0.4,
   // Garde-fous d'entree
@@ -63,7 +63,7 @@ function getProvider(env) {
       name: "Groq",
       endpoint: GROQ_ENDPOINT,
       token: groqKey,
-      defaultModel: "llama-3.1-8b-instant",
+      defaultModel: "llama-3.3-70b-versatile",
     };
   }
 
@@ -476,19 +476,12 @@ async function handleChat(request, env) {
     return json(request, env, { error: "server_misconfigured" }, 500);
   }
 
-  const body = {
-    model: env.CHAT_MODEL || provider.defaultModel,
-    messages: [
-      { role: "system", content: buildSystemPrompt(profileData, lang) },
-      ...clean.messages,
-    ],
-    max_tokens: env.CHAT_MAX_TOKENS
-      ? Number(env.CHAT_MAX_TOKENS)
-      : DEFAULTS.maxTokens,
-    temperature: DEFAULTS.temperature,
-    stream: true,
-  };
+  const modelsToTry =
+    provider.name === "Groq"
+      ? [env.CHAT_MODEL, "llama-3.3-70b-versatile", "llama3-70b-8192", "llama3-8b-8192"].filter(Boolean)
+      : [env.CHAT_MODEL || provider.defaultModel];
 
+  const candidateModels = [...new Set(modelsToTry)];
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
@@ -496,39 +489,68 @@ async function handleChat(request, env) {
   );
 
   let upstream;
-  try {
-    upstream = await fetch(
-      provider.endpoint,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${provider.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      }
-    );
-  } catch (err) {
-    clearTimeout(timeout);
-    const aborted = err && err.name === "AbortError";
-    await refundIpQuota(env, ip);
-    return json(
-      request,
-      env,
-      { error: aborted ? "upstream_timeout" : "upstream_unreachable" },
-      502
-    );
+  let upstreamDetail = "";
+
+  for (const candidateModel of candidateModels) {
+    const body = {
+      model: candidateModel,
+      messages: [
+        { role: "system", content: buildSystemPrompt(profileData, lang) },
+        ...clean.messages,
+      ],
+      max_tokens: env.CHAT_MAX_TOKENS
+        ? Number(env.CHAT_MAX_TOKENS)
+        : DEFAULTS.maxTokens,
+      temperature: DEFAULTS.temperature,
+      stream: true,
+    };
+
+    try {
+      upstream = await fetch(
+        provider.endpoint,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${provider.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        }
+      );
+    } catch (err) {
+      clearTimeout(timeout);
+      const aborted = err && err.name === "AbortError";
+      await refundIpQuota(env, ip);
+      return json(
+        request,
+        env,
+        { error: aborted ? "upstream_timeout" : "upstream_unreachable" },
+        502
+      );
+    }
+
+    if (upstream.status === 404) {
+      upstreamDetail = await upstream
+        .clone()
+        .text()
+        .catch(() => "");
+      console.log(`${provider.name} 404 on ${candidateModel}, trying fallback model...`);
+      continue;
+    }
+
+    break;
   }
 
   // Journalise la vraie cause en amont, cote serveur uniquement : la reponse
   // envoyee au navigateur reste generique.
-  let upstreamDetail = "";
   if (!upstream.ok) {
-    upstreamDetail = await upstream
-      .clone()
-      .text()
-      .catch(() => "");
+    if (!upstreamDetail) {
+      upstreamDetail = await upstream
+        .clone()
+        .text()
+        .catch(() => "");
+    }
     console.log(`${provider.name} ${upstream.status} ${upstreamDetail.slice(0, 300)}`);
   }
 
