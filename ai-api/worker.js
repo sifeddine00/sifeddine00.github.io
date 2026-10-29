@@ -34,7 +34,7 @@ const DEFAULTS = {
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8080",
   ],
-  model: "llama-3.3-70b-versatile",
+  model: "openai/gpt-oss-120b",
   maxTokens: 700,
   temperature: 0.4,
   // Garde-fous d'entree
@@ -63,7 +63,7 @@ function getProvider(env) {
       name: "Groq",
       endpoint: GROQ_ENDPOINT,
       token: groqKey,
-      defaultModel: "llama-3.3-70b-versatile",
+      defaultModel: "openai/gpt-oss-120b",
     };
   }
 
@@ -77,6 +77,71 @@ function getProvider(env) {
   }
 
   return null;
+}
+
+let cachedGroqModel = null;
+let cachedGroqModelList = [];
+let cacheExpiry = 0;
+
+async function getGroqModels(token) {
+  if (cachedGroqModelList.length > 0 && Date.now() < cacheExpiry) {
+    return cachedGroqModelList;
+  }
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/models", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const list = (data && data.data) || [];
+      cachedGroqModelList = list.map((m) => m.id).filter(Boolean);
+      cacheExpiry = Date.now() + 1800000; // 30 min cache
+      return cachedGroqModelList;
+    }
+  } catch (err) {
+    console.log("Error querying Groq models:", err && err.message);
+  }
+  return cachedGroqModelList;
+}
+
+async function resolveGroqModel(token) {
+  if (cachedGroqModel && Date.now() < cacheExpiry) {
+    return cachedGroqModel;
+  }
+
+  const available = await getGroqModels(token);
+  if (available.length > 0) {
+    // Priorité aux modèles de chat textuels actifs sur le palier gratuit
+    const preferred = [
+      "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b",
+      "qwen/qwen3.8-27b",
+      "llama-3.3-70b-versatile",
+      "llama3-70b-8192",
+      "llama3-8b-8192",
+      "mixtral-8x7b-32768",
+    ];
+
+    for (const p of preferred) {
+      if (available.includes(p)) {
+        cachedGroqModel = p;
+        return p;
+      }
+    }
+
+    const fallback = available.find(
+      (id) => !id.includes("whisper") && !id.includes("guard")
+    );
+    if (fallback) {
+      cachedGroqModel = fallback;
+      return fallback;
+    }
+  }
+
+  return "openai/gpt-oss-120b";
 }
 
 const SUPPORTED_LANGS = ["fr", "en", "ar"];
@@ -476,12 +541,24 @@ async function handleChat(request, env) {
     return json(request, env, { error: "server_misconfigured" }, 500);
   }
 
-  const modelsToTry =
-    provider.name === "Groq"
-      ? [env.CHAT_MODEL, "llama-3.3-70b-versatile", "llama3-70b-8192", "llama3-8b-8192"].filter(Boolean)
-      : [env.CHAT_MODEL || provider.defaultModel];
+  let candidateModels;
+  if (provider.name === "Groq") {
+    const dynamicallyResolved = await resolveGroqModel(provider.token);
+    const list = [
+      env.CHAT_MODEL,
+      dynamicallyResolved,
+      "openai/gpt-oss-120b",
+      "openai/gpt-oss-20b",
+      "qwen/qwen3.8-27b",
+      "llama-3.3-70b-versatile",
+      "llama3-70b-8192",
+      "llama3-8b-8192",
+    ].filter(Boolean);
+    candidateModels = [...new Set(list)];
+  } else {
+    candidateModels = [env.CHAT_MODEL || provider.defaultModel];
+  }
 
-  const candidateModels = [...new Set(modelsToTry)];
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
@@ -530,13 +607,20 @@ async function handleChat(request, env) {
       );
     }
 
-    if (upstream.status === 404) {
+    if (!upstream.ok) {
       upstreamDetail = await upstream
         .clone()
         .text()
         .catch(() => "");
-      console.log(`${provider.name} 404 on ${candidateModel}, trying fallback model...`);
-      continue;
+
+      const isModelNotFound =
+        upstream.status === 404 ||
+        (upstream.status === 400 && upstreamDetail.includes("model_not_found"));
+
+      if (isModelNotFound) {
+        console.log(`${provider.name} model not found on ${candidateModel}, trying fallback model...`);
+        continue;
+      }
     }
 
     break;
@@ -703,10 +787,18 @@ async function handleHealth(request, env) {
   const counters = await readCounters(env, getClientIp(request));
   const provider = getProvider(env);
 
+  let activeModel = env.CHAT_MODEL;
+  if (!activeModel && provider) {
+    activeModel =
+      provider.name === "Groq"
+        ? await resolveGroqModel(provider.token)
+        : provider.defaultModel;
+  }
+
   return json(request, env, {
     ok: true,
     provider: provider ? provider.name : "none",
-    model: env.CHAT_MODEL || (provider ? provider.defaultModel : DEFAULTS.model),
+    model: activeModel || DEFAULTS.model,
     token_configured: Boolean(provider),
     // Le widget sert ces deux champs pour desactiver la saisie avant meme
     // d'envoyer, plutot que d'afficher une erreur apres coup.
@@ -715,6 +807,41 @@ async function handleHealth(request, env) {
     ip_retry_after_sec: rateLimitDisabled(env) ? 0 : ipRetryAfter(env),
     remaining_today: Math.max(0, cfg.perDay - counters.global),
   });
+}
+
+async function handleModels(request, env) {
+  const origin = isAllowedOrigin(request, env);
+  if (origin === false) {
+    return json(request, env, { error: "origin_not_allowed" }, 403);
+  }
+
+  const provider = getProvider(env);
+  if (!provider) {
+    return json(request, env, {
+      ok: false,
+      error: "server_misconfigured",
+      message: "Clé API non configurée.",
+    }, 503);
+  }
+
+  if (provider.name !== "Groq") {
+    return json(request, env, {
+      ok: true,
+      provider: provider.name,
+      model: provider.defaultModel,
+    }, 200);
+  }
+
+  const models = await getGroqModels(provider.token);
+  const activeModel = await resolveGroqModel(provider.token);
+
+  return json(request, env, {
+    ok: true,
+    provider: "Groq",
+    selected_model: activeModel,
+    total_available: models.length,
+    available_models: models,
+  }, 200);
 }
 
 async function handleTest(request, env) {
@@ -732,7 +859,13 @@ async function handleTest(request, env) {
     }, 503);
   }
 
-  const model = env.CHAT_MODEL || provider.defaultModel;
+  let model = env.CHAT_MODEL;
+  if (!model && provider) {
+    model =
+      provider.name === "Groq"
+        ? await resolveGroqModel(provider.token)
+        : provider.defaultModel;
+  }
 
   try {
     const res = await fetch(provider.endpoint, {
@@ -808,6 +941,9 @@ export default {
     try {
       if (url.pathname === "/api/health") {
         return await handleHealth(request, env);
+      }
+      if (url.pathname === "/api/models") {
+        return await handleModels(request, env);
       }
       if (url.pathname === "/api/test") {
         return await handleTest(request, env);

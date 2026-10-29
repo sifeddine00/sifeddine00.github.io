@@ -18,7 +18,7 @@ const PROFILE_PATH = path.join(HERE, "..", "ai-api", "data", "profile.json");
 
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 const HF_ENDPOINT = "https://router.huggingface.co/v1/chat/completions";
-const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
 const LANGS = ["fr", "en", "ar"];
 
 const LANG_NAMES = { fr: "français", en: "anglais", ar: "arabe" };
