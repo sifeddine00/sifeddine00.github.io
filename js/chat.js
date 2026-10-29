@@ -515,7 +515,12 @@
       clearNotice();
     }
     if (typeof data.remaining_today === "number") {
-      showNotice(t("chat.quota_left", { n: data.remaining_today }), "info");
+      // N'affiche le bandeau que s'il reste 3 questions ou moins aujourd'hui
+      if (data.remaining_today <= 3) {
+        showNotice(t("chat.quota_left", { n: data.remaining_today }), "warn");
+      } else {
+        clearNotice();
+      }
     }
   }
 

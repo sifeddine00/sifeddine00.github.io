@@ -42,9 +42,9 @@ const DEFAULTS = {
   maxCharsPerMessage: 2000,
   maxHistoryChars: 12000,
   // Rate limiting
-  perIpPerWindow: 10, // requetes
+  perIpPerWindow: 30, // requetes par IP
   perIpWindowSec: 300, // 5 minutes
-  globalPerDay: 40, // ATTENTION : KV gratuit = 1000 ecritures/jour. Voir README.
+  globalPerDay: 200, // Limite journaliere globale (400 ecritures KV sur les 1000 gratuites)
   ipWindowTtlSec: 3600,
   globalTtlSec: 172800,
   // Timeout
