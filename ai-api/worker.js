@@ -1,14 +1,13 @@
 /**
  * portfolio-chat — Cloudflare Worker
  *
- * Proxy entre le widget js/chat.js (site GitHub Pages) et Hugging Face
- * Inference Providers (endpoint OpenAI-compatible router.huggingface.co).
+ * Proxy entre le widget js/chat.js (site GitHub Pages) et les fournisseurs LLM
+ * (Groq Cloud par defaut, ou Hugging Face Inference Providers).
  *
- * Pourquoi un Worker : le token HF ne doit JAMAIS etre dans le navigateur.
+ * Pourquoi un Worker : la cle API ne doit JAMAIS etre dans le navigateur.
  * Le system prompt ne doit JAMAIS etre visible du visiteur non plus.
  *
- * Cout : ~0.00002 $ par tour (Qwen3-4B-Instruct-2507, 0.01$/M in, 0.03$/M out).
- * Le quota gratuit HF est de 0.10 $/mois. D'ou le plafond global ci-dessous.
+ * Modele par defaut : Llama 3.1 8B Instant sur Groq (gratuit, ultra-rapide ~300 tok/s).
  */
 
 // ---------------------------------------------------------------------------
@@ -16,6 +15,9 @@
 // ---------------------------------------------------------------------------
 
 import profile from "./profile.js";
+
+const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+const HF_ENDPOINT = "https://router.huggingface.co/v1/chat/completions";
 
 const DEFAULTS = {
   // Origines autorisees. Remplace par ton domaine de production.
@@ -26,7 +28,7 @@ const DEFAULTS = {
     "http://127.0.0.1:8000",
     "http://127.0.0.1:5500",
   ],
-  model: "Qwen/Qwen3-4B-Instruct-2507",
+  model: "llama-3.1-8b-instant",
   maxTokens: 700,
   temperature: 0.4,
   // Garde-fous d'entree
@@ -42,6 +44,34 @@ const DEFAULTS = {
   // Timeout
   upstreamTimeoutMs: 45000,
 };
+
+function getProvider(env) {
+  // Support prioritaire de Groq, avec detection automatique si une cle Groq
+  // (commencant par gsk_) a ete renseignee dans HF_TOKEN ou GROQ_API_KEY.
+  const groqKey =
+    env.GROQ_API_KEY ||
+    (env.HF_TOKEN && String(env.HF_TOKEN).startsWith("gsk_") ? env.HF_TOKEN : null);
+
+  if (groqKey) {
+    return {
+      name: "Groq",
+      endpoint: GROQ_ENDPOINT,
+      token: groqKey,
+      defaultModel: "llama-3.1-8b-instant",
+    };
+  }
+
+  if (env.HF_TOKEN) {
+    return {
+      name: "Hugging Face",
+      endpoint: HF_ENDPOINT,
+      token: env.HF_TOKEN,
+      defaultModel: "Qwen/Qwen3-4B-Instruct-2507",
+    };
+  }
+
+  return null;
+}
 
 const SUPPORTED_LANGS = ["fr", "en", "ar"];
 
@@ -401,14 +431,14 @@ async function handleChat(request, env) {
     return json(request, env, { error: "invalid_request", detail: clean.error }, 400);
   }
 
-  if (!env.HF_TOKEN) {
+  const provider = getProvider(env);
+  if (!provider) {
     // Secret non configure : ce n'est pas un quota epuise mais une erreur de
-    // deploiement. Le widget bascule quand meme sur son repli contact, car
-    // "server_misconfigured" fait partie de ses codes de repli.
+    // deploiement. Le widget bascule sur son repli de configuration.
     return json(
       request,
       env,
-      { error: "server_misconfigured", detail: "HF_TOKEN missing" },
+      { error: "server_misconfigured", detail: "API key missing (GROQ_API_KEY or HF_TOKEN)" },
       503
     );
   }
@@ -441,7 +471,7 @@ async function handleChat(request, env) {
   }
 
   const body = {
-    model: env.CHAT_MODEL || DEFAULTS.model,
+    model: env.CHAT_MODEL || provider.defaultModel,
     messages: [
       { role: "system", content: buildSystemPrompt(profileData, lang) },
       ...clean.messages,
@@ -462,11 +492,11 @@ async function handleChat(request, env) {
   let upstream;
   try {
     upstream = await fetch(
-      "https://router.huggingface.co/v1/chat/completions",
+      provider.endpoint,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${env.HF_TOKEN}`,
+          Authorization: `Bearer ${provider.token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
@@ -492,22 +522,17 @@ async function handleChat(request, env) {
       .clone()
       .text()
       .catch(() => "");
-    console.log(`HF ${upstream.status} ${detail.slice(0, 300)}`);
+    console.log(`${provider.name} ${upstream.status} ${detail.slice(0, 300)}`);
   }
 
-  // 402 = credits epuises, 401/403 = token invalide, 429 = HF sature. Ces
-  // reponses ne declenchent aucune generation, mais elles signalent aussi un
-  // etat que le visiteur ne peut pas resoudre : les laisser compter evite de
-  // boucler sur une erreur permanente, et evite d'ouvrir une boucle
-  // d'ecritures KV a un tiers. Seuls les echecs ou HF n'a rien produit
-  // (timeout, injoignable, flux coupe) sont rembourses, plus haut.
+  // 402 = credits epuises, 401/403 = token invalide, 429 = LLM amont sature.
   if (upstream.status === 402) {
     clearTimeout(timeout);
     return json(request, env, { error: "quota_exhausted" }, 503);
   }
   if (upstream.status === 401 || upstream.status === 403) {
     clearTimeout(timeout);
-    return json(request, env, { error: "hf_token_rejected" }, 500);
+    return json(request, env, { error: "token_rejected" }, 500);
   }
   if (upstream.status === 429) {
     clearTimeout(timeout);
@@ -638,11 +663,13 @@ async function handleHealth(request, env) {
 
   const cfg = limits(env);
   const counters = await readCounters(env, getClientIp(request));
+  const provider = getProvider(env);
 
   return json(request, env, {
     ok: true,
-    model: env.CHAT_MODEL || DEFAULTS.model,
-    token_configured: Boolean(env.HF_TOKEN),
+    provider: provider ? provider.name : "none",
+    model: env.CHAT_MODEL || (provider ? provider.defaultModel : DEFAULTS.model),
+    token_configured: Boolean(provider),
     // Le widget sert ces deux champs pour desactiver la saisie avant meme
     // d'envoyer, plutot que d'afficher une erreur apres coup.
     rate_limit_disabled: rateLimitDisabled(env),

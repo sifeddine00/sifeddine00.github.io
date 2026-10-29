@@ -14,10 +14,11 @@ compatibility_date = "2026-05-03"
 workers_dev = true
 
 # --- Secrets (a definir via `wrangler.cmd secret put`, jamais dans ce fichier) ---
-# HF_TOKEN              token Hugging Face, permission "Make calls to Inference Providers"
+# GROQ_API_KEY          cle Groq Cloud (gratuite sur console.groq.com/keys) [RECOMMANDE]
+# HF_TOKEN              (alternatif) token Hugging Face
 # ALLOWED_ORIGINS       origines autorisees, separees par des virgules
-# CHAT_MODEL            optionnel, par defaut Qwen3-4B-Instruct-2507
-# CHAT_MAX_TOKENS       optionnel, par defaut 450
+# CHAT_MODEL            optionnel, par defaut llama-3.1-8b-instant (Groq) ou Qwen3-4B-Instruct-2507 (HF)
+# CHAT_MAX_TOKENS       optionnel, par defaut 700
 # CHAT_RATE_IP          optionnel, requetes par IP et par fenetre (defaut 10)
 # CHAT_RATE_GLOBAL      optionnel, requetes par jour tous visiteurs (defaut 40)
 # CHAT_RATE_WINDOW_SEC  optionnel, duree de la fenetre IP en secondes (defaut 300)

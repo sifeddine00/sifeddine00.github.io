@@ -28,6 +28,7 @@
     "upstream_unreachable",
     "upstream_timeout",
     "stream_error",
+    "token_rejected",
     "hf_token_rejected",
     "server_misconfigured",
   ]);
@@ -896,10 +897,18 @@
   function showFallback(code) {
     fallbackEl.hidden = false;
     renderFallback();
-    const msg =
-      code === "upstream_timeout" || code === "network_error"
-        ? t("chat.error_network")
-        : t("chat.error_quota");
+    let msg;
+    if (code === "upstream_timeout" || code === "network_error") {
+      msg = t("chat.error_network");
+    } else if (
+      code === "token_rejected" ||
+      code === "hf_token_rejected" ||
+      code === "server_misconfigured"
+    ) {
+      msg = t("chat.error_config");
+    } else {
+      msg = t("chat.error_quota");
+    }
     addMessage("error", msg);
     announce(msg);
   }

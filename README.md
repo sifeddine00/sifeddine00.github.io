@@ -5,7 +5,7 @@ Portfolio statique multilingue (français / anglais / arabe) avec chatbot IA.
 - **Site** : https://sifeddine00.github.io/
 - **Hébergement du site** : GitHub Pages (aucun serveur, aucun build)
 - **API du chatbot** : Cloudflare Workers
-- **Modèle** : Hugging Face Inference Providers, `Qwen/Qwen3-4B-Instruct-2507`
+- **Modèle** : Groq Cloud, `llama-3.1-8b-instant` (gratuit, ultra-rapide) ou Hugging Face `Qwen/Qwen3-4B-Instruct-2507`
 
 ---
 
@@ -17,15 +17,15 @@ Visiteur (GitHub Pages)
   │  js/chat.js  ── POST /api/chat  (SSE, streaming)
   ▼
 Cloudflare Worker  ─── workers.dev
-  │                   · garde le token HF secret
+  │                   · garde la clé d'API secrète
   │                   · CORS strict
   │                   · rate limiting via KV
   │                   · construit le prompt depuis profile.json
   ▼
-Hugging Face  ──  https://router.huggingface.co/v1/chat/completions
+Groq Cloud (ou HF)  ──  https://api.groq.com/openai/v1/chat/completions
 ```
 
-Le token Hugging Face **n'est jamais exposé au navigateur** : seul le Worker le
+La clé d'API (Groq ou HF) **n'est jamais exposée au navigateur** : seul le Worker la
 détient. C'est la raison d'être du Worker, le site restant du HTML statique.
 
 ---
@@ -53,10 +53,11 @@ détient. C'est la raison d'être du Worker, le site restant du HTML statique.
 
 | Variable | Obligatoire | Rôle |
 |---|---|---|
-| `HF_TOKEN` | oui | token HF avec la permission *Make calls to Inference Providers* |
+| `GROQ_API_KEY` | oui (recommandé) | clé API Groq gratuite (sur [console.groq.com/keys](https://console.groq.com/keys)) |
+| `HF_TOKEN` | alternatif | token HF si utilisation de Hugging Face |
 | `ALLOWED_ORIGINS` | non | origines CORS, séparées par des virgules. Défaut : GitHub Pages + localhost |
-| `CHAT_MODEL` | non | modèle HF. Défaut : `Qwen/Qwen3-4B-Instruct-2507` |
-| `CHAT_MAX_TOKENS` | non | défaut : 450 |
+| `CHAT_MODEL` | non | modèle. Défaut : `llama-3.1-8b-instant` (Groq) |
+| `CHAT_MAX_TOKENS` | non | défaut : 700 |
 | `CHAT_RATE_IP` | non | requêtes par IP et par fenêtre. Défaut : 10 |
 | `CHAT_RATE_GLOBAL` | non | requêtes par jour, tous visiteurs confondus. Défaut : 40 |
 | `CHAT_RATE_WINDOW_SEC` | non | durée de la fenêtre IP, en secondes. Défaut : 300 |
@@ -271,14 +272,14 @@ Une seule fois, dans cet ordre :
 ```powershell
 cd ai-api
 
-# 1. créer le namespace KV
+# 1. créer le namespace KV (si non existant)
 wrangler.cmd kv:namespace create CHAT
-#    -> remplacer l'id dans wrangler.toml
+#    -> remplacer l'id dans wrangler.toml si nouveau
 
-# 2. définir le secret (colle interactivement, ne jamais dans le chat)
-wrangler.cmd secret put HF_TOKEN
+# 2. définir la clé secrète Groq (obtenue gratuitement sur console.groq.com/keys)
+wrangler.cmd secret put GROQ_API_KEY
 
-# 3. déployer
+# 3. déployer sur Cloudflare Workers
 wrangler.cmd deploy
 ```
 

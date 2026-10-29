@@ -16,8 +16,9 @@ import process from "node:process";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PROFILE_PATH = path.join(HERE, "..", "ai-api", "data", "profile.json");
 
+const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 const HF_ENDPOINT = "https://router.huggingface.co/v1/chat/completions";
-const DEFAULT_MODEL = "Qwen/Qwen3-4B-Instruct-2507";
+const DEFAULT_MODEL = "llama-3.1-8b-instant";
 const LANGS = ["fr", "en", "ar"];
 
 const LANG_NAMES = { fr: "français", en: "anglais", ar: "arabe" };
@@ -192,7 +193,11 @@ const buildContext = (profile, lang) => {
 };
 
 async function callModel({ token, model, system, user, max }) {
-  const res = await fetch(HF_ENDPOINT, {
+  const isGroq = token.startsWith("gsk_") || Boolean(process.env.GROQ_API_KEY);
+  const endpoint = isGroq ? GROQ_ENDPOINT : HF_ENDPOINT;
+  const providerName = isGroq ? "Groq" : "Hugging Face";
+
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -212,7 +217,7 @@ async function callModel({ token, model, system, user, max }) {
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Hugging Face a repondu ${res.status}\n${body.slice(0, 400)}`);
+    throw new Error(`${providerName} a repondu ${res.status}\n${body.slice(0, 400)}`);
   }
 
   const data = await res.json();
@@ -252,9 +257,9 @@ const main = async () => {
     fail(`langue inconnue "${opts.lang}". Attendu : ${LANGS.join(", ")}.`);
   }
 
-  const token = process.env.HF_TOKEN;
+  const token = process.env.GROQ_API_KEY || process.env.HF_TOKEN;
   if (!token) {
-    fail("variable d'environnement HF_TOKEN absente.\n  PowerShell :  $env:HF_TOKEN = \"hf_...\"");
+    fail("variable d'environnement GROQ_API_KEY (ou HF_TOKEN) absente.\n  PowerShell :  $env:GROQ_API_KEY = \"gsk_...\"");
   }
 
   if (opts.task === "custom" && !opts.prompt) {
