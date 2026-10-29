@@ -517,12 +517,13 @@ async function handleChat(request, env) {
 
   // Journalise la vraie cause en amont, cote serveur uniquement : la reponse
   // envoyee au navigateur reste generique.
+  let upstreamDetail = "";
   if (!upstream.ok) {
-    const detail = await upstream
+    upstreamDetail = await upstream
       .clone()
       .text()
       .catch(() => "");
-    console.log(`${provider.name} ${upstream.status} ${detail.slice(0, 300)}`);
+    console.log(`${provider.name} ${upstream.status} ${upstreamDetail.slice(0, 300)}`);
   }
 
   // 402 = credits epuises, 401/403 = token invalide, 429 = LLM amont sature.
@@ -532,7 +533,7 @@ async function handleChat(request, env) {
   }
   if (upstream.status === 401 || upstream.status === 403) {
     clearTimeout(timeout);
-    return json(request, env, { error: "token_rejected" }, 500);
+    return json(request, env, { error: "token_rejected", detail: upstreamDetail.slice(0, 200) }, 500);
   }
   if (upstream.status === 429) {
     clearTimeout(timeout);
@@ -540,7 +541,16 @@ async function handleChat(request, env) {
   }
   if (!upstream.ok || !upstream.body) {
     clearTimeout(timeout);
-    return json(request, env, { error: "upstream_error" }, 502);
+    return json(
+      request,
+      env,
+      {
+        error: "upstream_error",
+        status: upstream.status,
+        detail: upstreamDetail.slice(0, 300) || undefined,
+      },
+      502
+    );
   }
 
   // --- Relai SSE ---

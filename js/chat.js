@@ -27,6 +27,8 @@
     "quota_exhausted",
     "upstream_unreachable",
     "upstream_timeout",
+    "upstream_error",
+    "internal_error",
     "stream_error",
     "token_rejected",
     "hf_token_rejected",
@@ -817,6 +819,7 @@
     }
 
     if (failure) {
+      console.error("[portfolio-chat] Erreur requête :", failure, failureDetail);
       botNode.remove();
 
       if (failure === "rate_limited" || failure === "http_429") {
@@ -906,6 +909,8 @@
       code === "server_misconfigured"
     ) {
       msg = t("chat.error_config");
+    } else if (code === "upstream_error" || code === "internal_error") {
+      msg = t("chat.error_generic");
     } else {
       msg = t("chat.error_quota");
     }
