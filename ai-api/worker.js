@@ -25,8 +25,14 @@ const DEFAULTS = {
     "https://sifeddine00.github.io",
     "http://localhost:8000",
     "http://localhost:5500",
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
     "http://127.0.0.1:8000",
     "http://127.0.0.1:5500",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8080",
   ],
   model: "llama-3.1-8b-instant",
   maxTokens: 700,
@@ -705,8 +711,18 @@ export default {
       if (url.pathname === "/api/health") {
         return await handleHealth(request, env);
       }
-      if (url.pathname === "/api/chat" && request.method === "POST") {
-        return await handleChat(request, env);
+      if (url.pathname === "/api/chat") {
+        if (request.method === "GET") {
+          return json(request, env, {
+            status: "active",
+            endpoint: "/api/chat",
+            method_required: "POST",
+            message: "L'endpoint /api/chat attend une requête POST en streaming JSON. Pour vérifier la santé de l'API, consultez /api/health.",
+          }, 200);
+        }
+        if (request.method === "POST") {
+          return await handleChat(request, env);
+        }
       }
       return json(request, env, { error: "not_found" }, 404);
     } catch (err) {
