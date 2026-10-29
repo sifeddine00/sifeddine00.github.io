@@ -688,15 +688,10 @@
     // nouveau 429. Le message de l'API a deja ete affiche dans le bandeau.
     if (quotaExhausted || cooldownUntil > Date.now()) return;
 
-    // Repli actif : on oriente vers le contact au lieu d'appeler l'API
+    // Si le repli etait affiche suite a une erreur precedente, on le masque
+    // pour permettre a l'utilisateur de retenter normalement l'envoi vers l'API.
     if (!fallbackEl.hidden) {
-      history.push({ role: "user", text });
-      saveHistory();
-      addMessage("user", text);
-      inputEl.value = "";
-      onInput();
-      addMessage("error", t("chat.fallback_text"));
-      return;
+      fallbackEl.hidden = true;
     }
 
     addMessage("user", text);

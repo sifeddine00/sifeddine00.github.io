@@ -717,6 +717,82 @@ async function handleHealth(request, env) {
   });
 }
 
+async function handleTest(request, env) {
+  const origin = isAllowedOrigin(request, env);
+  if (origin === false) {
+    return json(request, env, { error: "origin_not_allowed" }, 403);
+  }
+
+  const provider = getProvider(env);
+  if (!provider) {
+    return json(request, env, {
+      ok: false,
+      error: "server_misconfigured",
+      message: "Clé API non configurée. Utilisez 'wrangler secret put GROQ_API_KEY'.",
+    }, 503);
+  }
+
+  const model = env.CHAT_MODEL || provider.defaultModel;
+
+  try {
+    const res = await fetch(provider.endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${provider.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: "user", content: "Bonjour, réponds 'OK' en 1 mot." }],
+        max_tokens: 10,
+        temperature: 0.3,
+        stream: false,
+      }),
+    });
+
+    const status = res.status;
+    const raw = await res.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = raw;
+    }
+
+    if (!res.ok) {
+      return json(request, env, {
+        ok: false,
+        status,
+        provider: provider.name,
+        model_tested: model,
+        error_from_provider: parsed,
+      }, 502);
+    }
+
+    const reply =
+      parsed &&
+      parsed.choices &&
+      parsed.choices[0] &&
+      parsed.choices[0].message &&
+      parsed.choices[0].message.content;
+
+    return json(request, env, {
+      ok: true,
+      status: 200,
+      provider: provider.name,
+      model: model,
+      reply: (reply || "").trim(),
+      message: "Test direct réussi ! L'API Groq fonctionne et génère du texte.",
+    }, 200);
+  } catch (err) {
+    return json(request, env, {
+      ok: false,
+      error: "fetch_failed",
+      detail: err && err.message,
+    }, 502);
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -732,6 +808,9 @@ export default {
     try {
       if (url.pathname === "/api/health") {
         return await handleHealth(request, env);
+      }
+      if (url.pathname === "/api/test") {
+        return await handleTest(request, env);
       }
       if (url.pathname === "/api/chat") {
         if (request.method === "GET") {
