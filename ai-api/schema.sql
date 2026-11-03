@@ -19,3 +19,4 @@ CREATE TABLE IF NOT EXISTS chat_logs (
 CREATE INDEX IF NOT EXISTS idx_chat_logs_created_at ON chat_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_chat_logs_session ON chat_logs(session_id);
 CREATE INDEX IF NOT EXISTS idx_chat_logs_lang ON chat_logs(lang);
+

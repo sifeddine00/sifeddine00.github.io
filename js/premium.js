@@ -105,30 +105,55 @@
     });
   }
 
-  /* ========== AVATAR PARALLAX + HOVER ========== */
+  /* ========== AVATAR 3D TILT & PARALLAXE HOLOGRAPHIQUE ========== */
+  const heroSection = document.querySelector(".hero");
   const heroAvatar = document.querySelector(".hero-avatar");
   if (heroAvatar && !isTouch && !reducedMotion) {
     const avatarImg = heroAvatar.querySelector(".avatar-img");
     if (avatarImg) {
       let raf = null;
-      const parallaxFactor = 0.06;
-      heroAvatar.addEventListener("mousemove", (e) => {
+
+      const onMove = (e) => {
         if (raf) return;
         raf = requestAnimationFrame(() => {
           const rect = heroAvatar.getBoundingClientRect();
           const cx = rect.left + rect.width / 2;
           const cy = rect.top + rect.height / 2;
-          const dx = (e.clientX - cx) * -parallaxFactor;
-          const dy = (e.clientY - cy) * -parallaxFactor;
-          avatarImg.style.transform = `translate(${dx}px, ${dy}px) scale(1.04)`;
+
+          // Distance normalisée par rapport au centre (-1 à +1)
+          const normX = Math.max(-1, Math.min(1, (e.clientX - cx) / (window.innerWidth / 2.5)));
+          const normY = Math.max(-1, Math.min(1, (e.clientY - cy) / (window.innerHeight / 2.5)));
+
+          const rotateY = normX * 18;  // Rotation 3D sur l'axe vertical (jusqu'à 18°)
+          const rotateX = -normY * 16; // Rotation 3D sur l'axe horizontal (jusqu'à 16°)
+          const transZ = 35;           // Projection vers l'avant en 3D
+          const shadowX = -normX * 22;
+          const shadowY = Math.max(8, -normY * 14 + 18);
+
+          avatarImg.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(${transZ}px) scale3d(1.05, 1.05, 1.05)`;
+          avatarImg.style.filter = `drop-shadow(${shadowX.toFixed(1)}px ${shadowY.toFixed(1)}px 30px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 24px rgba(34, 211, 238, 0.3))`;
           heroAvatar.classList.add("glow-boost");
           raf = null;
         });
-      });
-      heroAvatar.addEventListener("mouseleave", () => {
-        avatarImg.style.transform = "translate(0,0) scale(1)";
+      };
+
+      const onLeave = () => {
+        if (raf) {
+          cancelAnimationFrame(raf);
+          raf = null;
+        }
+        avatarImg.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale3d(1, 1, 1)";
+        avatarImg.style.filter = "drop-shadow(0 15px 35px rgba(0, 0, 0, 0.55))";
         heroAvatar.classList.remove("glow-boost");
-      });
+      };
+
+      if (heroSection) {
+        heroSection.addEventListener("mousemove", onMove, { passive: true });
+        heroSection.addEventListener("mouseleave", onLeave);
+      } else {
+        heroAvatar.addEventListener("mousemove", onMove, { passive: true });
+        heroAvatar.addEventListener("mouseleave", onLeave);
+      }
     }
   }
 
