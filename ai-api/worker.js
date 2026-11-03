@@ -479,7 +479,9 @@ function getClientIp(request) {
 // Routes
 // ---------------------------------------------------------------------------
 
-async function handleChat(request, env) {
+async function handleChat(request, env, ctx) {
+  const startTime = Date.now();
+  const country = request.headers.get("cf-ipcountry") || "XX";
   const origin = isAllowedOrigin(request, env);
 
   if (origin === false) {
@@ -501,6 +503,10 @@ async function handleChat(request, env) {
   if (clean.error) {
     return json(request, env, { error: "invalid_request", detail: clean.error }, 400);
   }
+
+  const userMsgObj = clean.messages.filter((m) => m.role === "user").pop();
+  const userQuestion = userMsgObj ? userMsgObj.content : "";
+  const sessionId = (payload && payload.sessionId) || ("sess_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6));
 
   const provider = getProvider(env);
   if (!provider) {
@@ -567,8 +573,10 @@ async function handleChat(request, env) {
 
   let upstream;
   let upstreamDetail = "";
+  let usedModel = candidateModels[0] || "auto";
 
   for (const candidateModel of candidateModels) {
+    usedModel = candidateModel;
     const body = {
       model: candidateModel,
       messages: [
@@ -686,6 +694,7 @@ async function handleChat(request, env) {
       // Sans ce report, la reponse etait tronquee a quelques caracteres.
       let buffer = "";
       let upstreamDone = false;
+      let fullReply = "";
 
       const handleLine = (line) => {
         if (!line.startsWith("data:")) return false;
@@ -715,6 +724,7 @@ async function handleChat(request, env) {
             parsed.choices[0].delta.content;
 
           if (typeof delta === "string" && delta.length) {
+            fullReply += delta;
             send({ type: "delta", text: delta });
           }
         } catch {
@@ -742,6 +752,24 @@ async function handleChat(request, env) {
 
           if (upstreamDone) break;
         }
+
+        // Sauvegarde de l'échange dans Cloudflare D1
+        const durationMs = Date.now() - startTime;
+        const savePromise = saveChatLog(env, {
+          sessionId,
+          lang,
+          country,
+          userQuestion,
+          aiResponse: fullReply,
+          modelUsed: usedModel,
+          durationMs,
+        });
+        if (ctx && typeof ctx.waitUntil === "function") {
+          ctx.waitUntil(savePromise);
+        } else {
+          savePromise.catch(() => {});
+        }
+
         send({ type: "done" });
       } catch (err) {
         // Flux coupe avant la fin : rien n'a ete genere, la place est rendue.
@@ -926,8 +954,412 @@ async function handleTest(request, env) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Base de données D1 (Persistance des conversations)
+// ---------------------------------------------------------------------------
+
+async function saveChatLog(env, data) {
+  const { sessionId, lang, country, userQuestion, aiResponse, modelUsed, durationMs } = data;
+  if (!userQuestion || !aiResponse) return;
+
+  // 1. Insertion dans Cloudflare D1 SQL
+  if (env.DB) {
+    try {
+      const stmt = env.DB.prepare(
+        `INSERT INTO chat_logs (session_id, lang, country, user_question, ai_response, model_used, duration_ms)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      );
+      await stmt.bind(
+        sessionId || "anon",
+        lang || "fr",
+        country || "XX",
+        userQuestion,
+        aiResponse,
+        modelUsed || "auto",
+        durationMs || 0
+      ).run();
+      return;
+    } catch (err) {
+      console.log("D1 insert error:", err && err.message);
+    }
+  }
+
+  // 2. Repli KV si D1 n'est pas lié ou en cas d'erreur
+  if (env.CHAT) {
+    try {
+      const logItem = {
+        id: Date.now(),
+        sessionId: sessionId || "anon",
+        createdAt: new Date().toISOString(),
+        lang: lang || "fr",
+        country: country || "XX",
+        userQuestion,
+        aiResponse,
+        modelUsed: modelUsed || "auto",
+        durationMs: durationMs || 0,
+      };
+      const key = `log:${Date.now()}:${Math.random().toString(36).slice(2, 7)}`;
+      await env.CHAT.put(key, JSON.stringify(logItem), { expirationTtl: 86400 * 30 });
+    } catch (kvErr) {
+      console.log("KV fallback error:", kvErr && kvErr.message);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Administration & Dashboard Privé (/admin)
+// ---------------------------------------------------------------------------
+
+function getAdminKey(env) {
+  return env.ADMIN_KEY || "sif_admin_2026";
+}
+
+function checkAdminAuth(request, env) {
+  const url = new URL(request.url);
+  const keyParam = url.searchParams.get("key");
+  const authHeader = request.headers.get("Authorization");
+  const expectedKey = getAdminKey(env);
+
+  if (keyParam && keyParam === expectedKey) return true;
+  if (authHeader && authHeader.replace(/^Bearer\s+/i, "") === expectedKey) return true;
+  return false;
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderLoginHtml(error = false) {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accès Sécurisé · SifEddine IA</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #070a13; color: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 2.5rem 2rem; max-width: 420px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(34,211,238,0.15); text-align: center; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.9rem; background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); border-radius: 20px; color: #22d3ee; font-size: 0.8rem; font-weight: 600; margin-bottom: 1.25rem; }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #22d3ee; box-shadow: 0 0 8px #22d3ee; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+    p { color: #94a3b8; font-size: 0.885rem; line-height: 1.5; margin-bottom: 1.75rem; }
+    .error-msg { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; }
+    input { width: 100%; padding: 0.85rem 1rem; background: #020617; border: 1.5px solid #334155; border-radius: 12px; color: #fff; font-size: 0.95rem; margin-bottom: 1.25rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    input:focus { border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.25); }
+    button { width: 100%; padding: 0.85rem 1rem; background: linear-gradient(135deg, #22d3ee, #0284c7); border: none; border-radius: 12px; color: #04121a; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 0.2s, opacity 0.2s; box-shadow: 0 4px 14px rgba(34,211,238,0.35); }
+    button:hover { opacity: 0.95; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge"><span class="badge-dot"></span> Espace Privé SifEddine</div>
+    <h1>Administration IA</h1>
+    <p>Consultez en temps réel les questions posées par les recruteurs et visiteurs de votre portfolio.</p>
+    ${error ? `<div class="error-msg">Clé secrète invalide. Veuillez réessayer.</div>` : ""}
+    <form method="GET" action="/admin">
+      <input type="password" name="key" placeholder="Entrez votre mot de passe secret..." required autofocus>
+      <button type="submit">Déverrouiller le Dashboard</button>
+    </form>
+  </div>
+</body>
+</html>`;
+}
+
+function renderDashboardHtml(logs, totalCount, todayCount, key) {
+  const langCounts = { fr: 0, en: 0, ar: 0, other: 0 };
+  const countryCounts = {};
+
+  logs.forEach((item) => {
+    const l = (item.lang || "fr").toLowerCase();
+    if (langCounts[l] !== undefined) langCounts[l]++;
+    else langCounts.other++;
+
+    const c = (item.country || "XX").toUpperCase();
+    countryCounts[c] = (countryCounts[c] || 0) + 1;
+  });
+
+  const topCountries = Object.entries(countryCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([c, n]) => `${c} (${n})`)
+    .join(", ") || "Aucun";
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard IA · Sif-Eddine Laidi</title>
+  <style>
+    :root {
+      --bg: #070a13;
+      --surface: #0f172a;
+      --surface-2: #1e293b;
+      --border: #334155;
+      --accent: #22d3ee;
+      --accent-strong: #0284c7;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 1.5rem; }
+    .container { max-width: 1080px; margin: 0 auto; }
+    
+    .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo { font-size: 1.2rem; font-weight: 800; color: var(--accent); background: rgba(34,211,238,0.1); padding: 0.4rem 0.8rem; border-radius: 10px; border: 1px solid rgba(34,211,238,0.3); }
+    .brand-title { font-size: 1.25rem; font-weight: 700; color: #fff; }
+    .brand-subtitle { font-size: 0.8rem; color: var(--text-muted); }
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .btn { padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn--primary { background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: #04121a; }
+    .btn--primary:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn--secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn--secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .kpi-card__title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 0.5rem; }
+    .kpi-card__value { font-size: 1.85rem; font-weight: 800; color: #fff; }
+    .kpi-card__value--accent { color: var(--accent); }
+    .kpi-card__sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.35rem; }
+
+    .filter-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; background: var(--surface); padding: 0.85rem 1.25rem; border-radius: 14px; border: 1px solid var(--border); }
+    .search-input { flex: 1; min-width: 240px; padding: 0.6rem 1rem; background: #020617; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--accent); }
+    .filter-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .pill { padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; background: var(--surface-2); color: var(--text-muted); border: 1px solid transparent; cursor: pointer; transition: all 0.2s; }
+    .pill.is-active, .pill:hover { background: rgba(34,211,238,0.15); color: var(--accent); border-color: rgba(34,211,238,0.4); }
+
+    .feed-list { display: flex; flex-direction: column; gap: 1.25rem; }
+    .chat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.35rem; transition: transform 0.2s, border-color 0.2s; }
+    .chat-card:hover { border-color: rgba(34,211,238,0.4); transform: translateY(-2px); }
+    .chat-card__header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.8rem; color: var(--text-muted); }
+    .tags { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .tag { padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .tag--lang { background: rgba(56,189,248,0.15); color: #38bdf8; }
+    .tag--country { background: rgba(168,85,247,0.15); color: #c084fc; }
+    .tag--model { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .tag--time { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+    .msg-group { display: flex; flex-direction: column; gap: 0.75rem; }
+    .msg-bubble { padding: 0.85rem 1.1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.6; word-break: break-word; white-space: pre-wrap; }
+    .msg-bubble--user { background: rgba(34,211,238,0.1); border-left: 3px solid var(--accent); color: #f1f5f9; }
+    .msg-bubble--user::before { content: "👤 Question Visiteur : "; font-weight: 700; color: var(--accent); display: block; margin-bottom: 0.25rem; font-size: 0.8rem; }
+    .msg-bubble--ai { background: rgba(15,23,42,0.8); border: 1px solid var(--border); color: #e2e8f0; }
+    .msg-bubble--ai::before { content: "🤖 Réponse IA : "; font-weight: 700; color: #38bdf8; display: block; margin-bottom: 0.25rem; font-size: 0.8rem; }
+
+    .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--border); border-radius: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-logo">&lt;Sif /&gt;</div>
+        <div>
+          <h1 class="brand-title">Dashboard Conversations IA</h1>
+          <p class="brand-subtitle">Base de données Cloudflare D1 · Enregistrement en direct</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/api/admin/export?key=${encodeURIComponent(key)}&format=csv" class="btn btn--secondary" download>📥 Exporter CSV (Excel)</a>
+        <a href="/api/admin/export?key=${encodeURIComponent(key)}&format=json" class="btn btn--secondary" target="_blank">📄 Exporter JSON</a>
+        <a href="/admin?key=${encodeURIComponent(key)}" class="btn btn--primary">🔄 Actualiser</a>
+      </div>
+    </header>
+
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-card__title">Total Questions</div>
+        <div class="kpi-card__value kpi-card__value--accent">${totalCount}</div>
+        <div class="kpi-card__sub">Échanges archivés en base D1</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__title">Aujourd'hui</div>
+        <div class="kpi-card__value">${todayCount}</div>
+        <div class="kpi-card__sub">Questions posées ce jour</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__title">Langues</div>
+        <div class="kpi-card__value" style="font-size:1.4rem;">🇫🇷 ${langCounts.fr} · 🇬🇧 ${langCounts.en} · 🇸🇦 ${langCounts.ar}</div>
+        <div class="kpi-card__sub">Répartition des visiteurs</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-card__title">Top Pays Visiteurs</div>
+        <div class="kpi-card__value" style="font-size:1.25rem;">${topCountries}</div>
+        <div class="kpi-card__sub">Détection Cloudflare IP</div>
+      </div>
+    </section>
+
+    <div class="filter-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="🔍 Rechercher dans les questions ou réponses en direct...">
+      <div class="filter-pills">
+        <button class="pill is-active" data-lang="all">Toutes (${logs.length})</button>
+        <button class="pill" data-lang="fr">🇫🇷 FR (${langCounts.fr})</button>
+        <button class="pill" data-lang="en">🇬🇧 EN (${langCounts.en})</button>
+        <button class="pill" data-lang="ar">🇸🇦 AR (${langCounts.ar})</button>
+      </div>
+    </div>
+
+    <div class="feed-list" id="feedList">
+      ${logs.length === 0 ? `
+        <div class="empty-state">
+          <p style="font-size:1.1rem; margin-bottom:0.5rem; color:#fff;">Aucune conversation enregistrée pour le moment.</p>
+          <p>Dès qu'un visiteur pose une question sur votre portfolio, elle apparaîtra ici instantanément !</p>
+        </div>
+      ` : logs.map((log) => `
+        <article class="chat-card" data-lang="${escapeHtml(log.lang || 'fr')}" data-content="${escapeHtml((log.user_question || '') + ' ' + (log.ai_response || '')).toLowerCase()}">
+          <div class="chat-card__header">
+            <div class="tags">
+              <span class="tag tag--lang">${escapeHtml((log.lang || 'fr').toUpperCase())}</span>
+              <span class="tag tag--country">🌍 ${escapeHtml(log.country || 'XX')}</span>
+              <span class="tag tag--model">${escapeHtml(log.model_used || 'auto')}</span>
+              ${log.duration_ms ? `<span class="tag tag--time">⚡ ${log.duration_ms} ms</span>` : ''}
+            </div>
+            <div>📅 ${escapeHtml(log.created_at || '')}</div>
+          </div>
+          <div class="msg-group">
+            <div class="msg-bubble msg-bubble--user">${escapeHtml(log.user_question || '')}</div>
+            <div class="msg-bubble msg-bubble--ai">${escapeHtml(log.ai_response || '')}</div>
+          </div>
+        </article>
+      `).join('')}
+    </div>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const pills = document.querySelectorAll(".pill");
+    const cards = document.querySelectorAll(".chat-card");
+
+    let currentLang = "all";
+    let currentQuery = "";
+
+    function filterCards() {
+      cards.forEach(card => {
+        const lang = card.getAttribute("data-lang");
+        const content = card.getAttribute("data-content") || "";
+        const matchesLang = currentLang === "all" || lang === currentLang;
+        const matchesQuery = !currentQuery || content.includes(currentQuery);
+        card.style.display = (matchesLang && matchesQuery) ? "" : "none";
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        currentQuery = e.target.value.toLowerCase().trim();
+        filterCards();
+      });
+    }
+
+    pills.forEach(pill => {
+      pill.addEventListener("click", () => {
+        pills.forEach(p => p.classList.remove("is-active"));
+        pill.classList.add("is-active");
+        currentLang = pill.getAttribute("data-lang");
+        filterCards();
+      });
+    });
+  </script>
+</body>
+</html>`;
+}
+
+async function handleAdminDashboard(request, env) {
+  if (!checkAdminAuth(request, env)) {
+    const url = new URL(request.url);
+    const hasKeyParam = url.searchParams.has("key");
+    return new Response(renderLoginHtml(hasKeyParam), {
+      status: hasKeyParam ? 401 : 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  }
+
+  const key = getAdminKey(env);
+  let totalCount = 0;
+  let todayCount = 0;
+  let logs = [];
+
+  if (env.DB) {
+    try {
+      const totalRes = await env.DB.prepare("SELECT COUNT(*) as count FROM chat_logs").first();
+      totalCount = (totalRes && totalRes.count) || 0;
+
+      const todayRes = await env.DB.prepare("SELECT COUNT(*) as count FROM chat_logs WHERE created_at >= date('now')").first();
+      todayCount = (todayRes && todayRes.count) || 0;
+
+      const listRes = await env.DB.prepare("SELECT * FROM chat_logs ORDER BY id DESC LIMIT 150").all();
+      logs = (listRes && listRes.results) || [];
+    } catch (err) {
+      console.log("DB query error in admin:", err);
+    }
+  }
+
+  return new Response(renderDashboardHtml(logs, totalCount, todayCount, key), {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
+async function handleAdminExport(request, env) {
+  if (!checkAdminAuth(request, env)) {
+    return json(request, env, { error: "unauthorized" }, 401);
+  }
+
+  const url = new URL(request.url);
+  const format = (url.searchParams.get("format") || "json").toLowerCase();
+
+  let logs = [];
+  if (env.DB) {
+    try {
+      const res = await env.DB.prepare("SELECT * FROM chat_logs ORDER BY id DESC").all();
+      logs = (res && res.results) || [];
+    } catch (err) {
+      return json(request, env, { error: "db_error", detail: err && err.message }, 500);
+    }
+  }
+
+  if (format === "csv") {
+    const csvHeader = "ID,SessionID,Date,Langue,Pays,Question,Reponse,Modele,Duree_ms\r\n";
+    const escapeCsv = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+
+    const csvRows = logs.map(l => [
+      l.id,
+      escapeCsv(l.session_id),
+      escapeCsv(l.created_at),
+      escapeCsv(l.lang),
+      escapeCsv(l.country),
+      escapeCsv(l.user_question),
+      escapeCsv(l.ai_response),
+      escapeCsv(l.model_used),
+      l.duration_ms || 0
+    ].join(",")).join("\r\n");
+
+    const csvContent = "\uFEFF" + csvHeader + csvRows;
+    return new Response(csvContent, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="chat_logs_${new Date().toISOString().slice(0, 10)}.csv"`,
+      },
+    });
+  }
+
+  return json(request, env, {
+    total: logs.length,
+    exported_at: new Date().toISOString(),
+    logs,
+  }, 200);
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
@@ -939,6 +1371,12 @@ export default {
     }
 
     try {
+      if (url.pathname === "/admin" || url.pathname === "/admin/") {
+        return await handleAdminDashboard(request, env);
+      }
+      if (url.pathname === "/api/admin/export") {
+        return await handleAdminExport(request, env);
+      }
       if (url.pathname === "/api/health") {
         return await handleHealth(request, env);
       }
@@ -958,7 +1396,7 @@ export default {
           }, 200);
         }
         if (request.method === "POST") {
-          return await handleChat(request, env);
+          return await handleChat(request, env, ctx);
         }
       }
       return json(request, env, { error: "not_found" }, 404);

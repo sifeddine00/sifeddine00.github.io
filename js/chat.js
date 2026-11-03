@@ -129,6 +129,19 @@
   // Persistance
   // ---------------------------------------------------------------------
 
+  function getSessionId() {
+    try {
+      let id = sessionStorage.getItem("sif_chat_session");
+      if (!id) {
+        id = "sess_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+        sessionStorage.setItem("sif_chat_session", id);
+      }
+      return id;
+    } catch {
+      return "sess_" + Date.now().toString(36);
+    }
+  }
+
   function loadHistory() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -823,6 +836,7 @@
 
     try {
       const payload = {
+        sessionId: getSessionId(),
         lang: lang(),
         messages: history
           .slice(-8)

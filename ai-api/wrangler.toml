@@ -51,6 +51,12 @@ workers_dev = true
 binding = "CHAT"
 id = "05f8cfd0da50463a8714d28f1943eb0a"
 
+# --- Base de données D1 SQL (Stockage des conversations) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "portfolio-chat-db"
+database_id = "ae1f737b-6adf-49cb-ab51-7e8e7d98cd38"
+
 # --- Import du JSON au build ---
 # Aucune table de rules ici : profile.json est importe nativement par esbuild dans
 # profile.js, qui produit le meme objet en dev et en production. Une regle de
