@@ -214,14 +214,19 @@
     figure.appendChild(earLeft);
     figure.appendChild(earRight);
 
-    // Tête & Visière cybernétique avec l'avatar 3D
+    // Tête & Visière cybernétique avec Écran à Yeux LED
     const head = el("div", "chat-robot__head");
     const visor = el("div", "chat-robot__visor");
-    const img = el("img", "chat-robot__avatar");
-    img.src = BOT_AVATAR_SRC;
-    img.alt = "Assistant IA Sif-Eddine";
+    
+    // 2 Yeux robotiques numériques animés
+    const eyes = el("div", "chat-robot__eyes");
+    const eyeLeft = el("div", "chat-robot__eye chat-robot__eye--left");
+    const eyeRight = el("div", "chat-robot__eye chat-robot__eye--right");
+    eyes.appendChild(eyeLeft);
+    eyes.appendChild(eyeRight);
+    visor.appendChild(eyes);
+
     const scanline = el("div", "chat-robot__scanline");
-    visor.appendChild(img);
     visor.appendChild(scanline);
     head.appendChild(visor);
     figure.appendChild(head);
