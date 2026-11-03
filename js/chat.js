@@ -180,17 +180,73 @@
   let quotaExhausted = false;
 
   function build() {
-    // --- Bouton flottant ---
+    // --- Bouton flottant avec Robot Animé Interactif ---
     fab = el("button", "chat-fab");
     fab.type = "button";
 
-    // Avatar Sif Robot
-    const fabAvatarWrap = el("div", "chat-fab__avatar-wrap");
-    const fabImg = el("img", "chat-fab__avatar-img");
-    fabImg.src = BOT_AVATAR_SRC;
-    fabImg.alt = "Assistant IA Sif-Eddine";
-    fabAvatarWrap.appendChild(fabImg);
-    fab.appendChild(fabAvatarWrap);
+    // Conteneur Robot Animé
+    const robot = el("div", "chat-robot");
+
+    // Bulle d'accroche interactive
+    const bubble = el("div", "chat-robot__bubble");
+    const bubbleText = el("span", "chat-robot__bubble-text", t("chat.bubble"));
+    bubble.appendChild(bubbleText);
+    robot.appendChild(bubble);
+
+    // Ombre dynamique de lévitation au sol
+    const shadow = el("div", "chat-robot__shadow");
+    robot.appendChild(shadow);
+
+    // Corps / Figurine flottante (lévite avec @keyframes)
+    const figure = el("div", "chat-robot__figure");
+
+    // Antenne cybernétique avec diode lumineuse
+    const antenna = el("div", "chat-robot__antenna");
+    const antennaLight = el("div", "chat-robot__antenna-light");
+    const antennaRod = el("div", "chat-robot__antenna-rod");
+    antenna.appendChild(antennaLight);
+    antenna.appendChild(antennaRod);
+    figure.appendChild(antenna);
+
+    // Oreilles / Casque méca
+    const earLeft = el("div", "chat-robot__ear chat-robot__ear--left");
+    const earRight = el("div", "chat-robot__ear chat-robot__ear--right");
+    figure.appendChild(earLeft);
+    figure.appendChild(earRight);
+
+    // Tête & Visière cybernétique avec l'avatar 3D
+    const head = el("div", "chat-robot__head");
+    const visor = el("div", "chat-robot__visor");
+    const img = el("img", "chat-robot__avatar");
+    img.src = BOT_AVATAR_SRC;
+    img.alt = "Assistant IA Sif-Eddine";
+    const scanline = el("div", "chat-robot__scanline");
+    visor.appendChild(img);
+    visor.appendChild(scanline);
+    head.appendChild(visor);
+    figure.appendChild(head);
+
+    // Bras robotique qui salue amicalement
+    const arm = el("div", "chat-robot__arm");
+    arm.innerHTML = `
+      <svg viewBox="0 0 28 34" class="chat-robot__arm-svg" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8" cy="8" r="4" fill="#0891b2" stroke="#22d3ee" stroke-width="1.5"/>
+        <path d="M9 10 C14 14 18 16 22 12" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/>
+        <g class="chat-robot__hand">
+          <ellipse cx="23" cy="11" rx="4" ry="5" fill="#0e7490" stroke="#67e8f9" stroke-width="1.5" transform="rotate(-15 23 11)"/>
+          <path d="M21 7 L24 5 M24 7 L27 6 M24 9 L28 9" stroke="#67e8f9" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="23" cy="11" r="1.5" fill="#a5f3fc"/>
+        </g>
+      </svg>
+    `;
+    figure.appendChild(arm);
+
+    // Propulseur sous le robot
+    const thruster = el("div", "chat-robot__thruster");
+    figure.appendChild(thruster);
+
+    robot.appendChild(figure);
+    fab.appendChild(robot);
 
     // Icone de fermeture quand le panneau est ouvert
     const fabClose = icon(["M18 6 6 18", "M6 6l12 12"]);
@@ -339,6 +395,8 @@
     const fabLabel = isOpen ? t("chat.close") : t("chat.open");
     fab.setAttribute("aria-label", fabLabel);
     fab.setAttribute("title", fabLabel);
+    const bubbleTextEl = fab.querySelector(".chat-robot__bubble-text");
+    if (bubbleTextEl) bubbleTextEl.textContent = t("chat.bubble");
     titleEl.textContent = t("chat.title");
     inputEl.setAttribute("placeholder", t("chat.placeholder"));
     inputEl.setAttribute("aria-label", t("chat.placeholder"));
@@ -635,6 +693,8 @@
     if (isOpen) {
       document.body.classList.add("chat-open");
       badge.hidden = true;
+      const bubble = fab.querySelector(".chat-robot__bubble");
+      if (bubble) bubble.classList.add("is-dismissed");
 
       if (history.length === 0) {
         addMessage("bot", t("chat.greeting"));
