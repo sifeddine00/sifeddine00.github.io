@@ -11,28 +11,31 @@
      bottom: 2rem / right: 2rem. Sans ce decalage, les 2 se chevauchent. */
   bottom: 6.5rem;
   right: 2rem;
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 50% 30%, var(--surface-2) 0%, #0a0e1a 100%);
   color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 9000;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-  transition: transform var(--transition), background var(--transition),
-    border-color var(--transition), opacity 0.3s ease;
+  box-shadow: 
+    0 10px 28px rgba(0, 0, 0, 0.4),
+    0 0 16px var(--accent-glow-strong);
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition), background var(--transition);
   -webkit-tap-highlight-color: transparent;
+  overflow: visible;
 }
 
 .chat-fab:hover {
-  background: var(--accent);
-  color: #04121a;
-  border-color: var(--accent);
-  transform: translateY(-3px) scale(1.04);
+  transform: translateY(-4px) scale(1.06);
+  border-color: #67e8f9;
+  box-shadow: 
+    0 14px 32px rgba(0, 0, 0, 0.5),
+    0 0 24px var(--accent-glow-strong);
 }
 
 .chat-fab:focus-visible {
@@ -44,9 +47,60 @@
   display: none;
 }
 
-.chat-fab svg {
+.chat-fab__avatar-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 211, 238, 0.12);
+  border: 1.5px solid rgba(34, 211, 238, 0.45);
+  box-shadow: inset 0 0 10px rgba(34, 211, 238, 0.25);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+
+.chat-fab__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.chat-fab__close-icon {
   width: 24px;
   height: 24px;
+  position: absolute;
+  color: var(--accent);
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.chat-fab.is-open .chat-fab__avatar-wrap {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+  pointer-events: none;
+}
+
+.chat-fab.is-open .chat-fab__close-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  pointer-events: auto;
+}
+
+.chat-fab.is-open {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.chat-fab.is-open:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
 }
 
 /* Halo pulsant : signale la presence du chat sans obliger a chercher */
@@ -209,32 +263,41 @@
 
 .chat-header__avatar {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: var(--accent);
-  color: #04121a;
+  background: radial-gradient(circle at 50% 30%, var(--surface-2) 0%, #0a0e1a 100%);
+  border: 2px solid var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.95rem;
   flex-shrink: 0;
   box-shadow:
-    0 0 0 3px var(--accent-glow),
-    0 0 18px var(--accent-glow-strong);
+    0 0 0 2px var(--accent-glow),
+    0 0 16px var(--accent-glow-strong);
+  overflow: visible;
+}
+
+.chat-header__avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
 }
 
 .chat-header__dot {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 11px;
-  height: 11px;
+  bottom: -1px;
+  right: -1px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--text-muted);
   border: 2px solid var(--surface-2);
   transition: background var(--transition);
+  z-index: 2;
 }
 
 .chat-header__dot.is-online {
@@ -333,12 +396,31 @@
 }
 
 .chat-msg--bot {
+  position: relative;
   align-self: flex-start;
+  margin-inline-start: 34px;
+  max-width: calc(86% - 34px);
   background: color-mix(in srgb, var(--surface-2) 92%, var(--accent) 8%);
   border: 1px solid var(--border);
   border-inline-start: 2px solid var(--accent);
   color: var(--text);
   border-bottom-left-radius: 4px;
+}
+
+.chat-msg--bot::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -34px;
+  top: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--surface-2);
+  background-image: url("../assets/img/sif_avatar_sansbackgroud.png");
+  background-size: cover;
+  background-position: top center;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .chat-msg--error {
@@ -371,14 +453,35 @@
 /* ---------- Indicateur d'ecriture ---------- */
 
 .chat-typing {
+  position: relative;
   align-self: flex-start;
+  margin: 0.35rem 1rem;
+  margin-inline-start: calc(1rem + 34px);
   display: flex;
+  align-items: center;
   gap: 4px;
   padding: 0.8rem 0.9rem;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 14px;
   border-bottom-left-radius: 4px;
+}
+
+.chat-typing::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -34px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--surface-2);
+  background-image: url("../assets/img/sif_avatar_sansbackgroud.png");
+  background-size: cover;
+  background-position: top center;
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .chat-typing span {
@@ -721,6 +824,10 @@
     bottom: 5.25rem;
     right: 1rem;
   }
+  .chat-fab__avatar-wrap {
+    width: 38px;
+    height: 38px;
+  }
   .chat-panel {
     right: 0.5rem;
     left: 0.5rem;
@@ -733,6 +840,23 @@
   }
   .chat-msg {
     max-width: 92%;
+  }
+  .chat-msg--bot {
+    margin-inline-start: 30px;
+    max-width: calc(92% - 30px);
+  }
+  .chat-msg--bot::before {
+    inset-inline-start: -30px;
+    width: 24px;
+    height: 24px;
+  }
+  .chat-typing {
+    margin-inline-start: calc(1rem + 30px);
+  }
+  .chat-typing::before {
+    inset-inline-start: -30px;
+    width: 24px;
+    height: 24px;
   }
 }
 

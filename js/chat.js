@@ -162,8 +162,10 @@
   // Construction du DOM
   // ---------------------------------------------------------------------
 
+  const BOT_AVATAR_SRC = "assets/img/sif_avatar_sansbackgroud.png";
+
   let fab, panel, messagesEl, typingEl, suggestionsEl, inputEl, sendBtn;
-  let statusEl, titleEl, avatarInitial, badge, fallbackEl, liveRegion, noticeEl;
+  let statusEl, titleEl, badge, fallbackEl, liveRegion, noticeEl;
   let isOpen = false;
   let streaming = false;
   let userStopped = false;
@@ -181,11 +183,20 @@
     // --- Bouton flottant ---
     fab = el("button", "chat-fab");
     fab.type = "button";
-    fab.appendChild(
-      icon([
-        "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
-      ])
-    );
+
+    // Avatar Sif Robot
+    const fabAvatarWrap = el("div", "chat-fab__avatar-wrap");
+    const fabImg = el("img", "chat-fab__avatar-img");
+    fabImg.src = BOT_AVATAR_SRC;
+    fabImg.alt = "Assistant IA Sif-Eddine";
+    fabAvatarWrap.appendChild(fabImg);
+    fab.appendChild(fabAvatarWrap);
+
+    // Icone de fermeture quand le panneau est ouvert
+    const fabClose = icon(["M18 6 6 18", "M6 6l12 12"]);
+    fabClose.classList.add("chat-fab__close-icon");
+    fab.appendChild(fabClose);
+
     badge = el("span", "chat-fab__badge", "1");
     badge.hidden = true;
     fab.appendChild(badge);
@@ -201,8 +212,10 @@
     const header = el("div", "chat-header");
 
     const av = el("div", "chat-header__avatar");
-    avatarInitial = el("span", null, "S");
-    av.appendChild(avatarInitial);
+    const avImg = el("img", "chat-header__avatar-img");
+    avImg.src = BOT_AVATAR_SRC;
+    avImg.alt = "Assistant IA Sif-Eddine";
+    av.appendChild(avImg);
     const dot = el("span", "chat-header__dot");
     av.appendChild(dot);
     header.appendChild(av);
@@ -323,8 +336,9 @@
   ];
 
   function applyLabels() {
-    fab.setAttribute("aria-label", t("chat.open"));
-    fab.setAttribute("title", t("chat.open"));
+    const fabLabel = isOpen ? t("chat.close") : t("chat.open");
+    fab.setAttribute("aria-label", fabLabel);
+    fab.setAttribute("title", fabLabel);
     titleEl.textContent = t("chat.title");
     inputEl.setAttribute("placeholder", t("chat.placeholder"));
     inputEl.setAttribute("aria-label", t("chat.placeholder"));
@@ -613,6 +627,10 @@
   function toggle(next) {
     isOpen = next;
     panel.hidden = !isOpen;
+    fab.classList.toggle("is-open", isOpen);
+    const fabLabel = isOpen ? t("chat.close") : t("chat.open");
+    fab.setAttribute("aria-label", fabLabel);
+    fab.setAttribute("title", fabLabel);
 
     if (isOpen) {
       document.body.classList.add("chat-open");
