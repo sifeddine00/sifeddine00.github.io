@@ -1001,6 +1001,42 @@
   font-weight: 600;
 }
 
+/* ---------- Barre d'identification visiteur (optionnelle) ---------- */
+
+.chat-user-bar {
+  padding: 0.4rem 1rem;
+  background: var(--surface-2);
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.chat-user-input {
+  width: 100%;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.76rem;
+  font-family: inherit;
+  color: var(--text);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.chat-user-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  opacity: 0.85;
+}
+
+.chat-user-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  background: var(--bg);
+}
+
 /* ---------- Zone de saisie ---------- */
 
 .chat-form {

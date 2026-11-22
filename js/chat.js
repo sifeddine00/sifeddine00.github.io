@@ -17,10 +17,31 @@
   })();
 
   const STORAGE_KEY = "sif_chat-v1";
+  const USER_NAME_KEY = "sif_chat_user_name";
   const MAX_STORED = 12; // 6 allers-retours
   const MAX_SEND_CHARS = 1200;
   const HEALTH_TIMEOUT = 4000;
   const STREAM_TIMEOUT = 45000;
+
+  function getUserName() {
+    try {
+      return (localStorage.getItem(USER_NAME_KEY) || "").trim();
+    } catch {
+      return "";
+    }
+  }
+
+  function saveUserName(name) {
+    try {
+      if (name) {
+        localStorage.setItem(USER_NAME_KEY, name.slice(0, 60));
+      } else {
+        localStorage.removeItem(USER_NAME_KEY);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
 
   // Codes d'erreur Worker => cles i18n de repli
   const FALLBACK_CODES = new Set([
@@ -178,7 +199,7 @@
   const BOT_AVATAR_SRC = "assets/img/sif_avatar_sansbackgroud.png";
 
   let fab, panel, messagesEl, typingEl, suggestionsEl, inputEl, sendBtn;
-  let statusEl, titleEl, badge, fallbackEl, liveRegion, noticeEl;
+  let statusEl, titleEl, badge, fallbackEl, liveRegion, noticeEl, userNameInput;
   let isOpen = false;
   let streaming = false;
   let userStopped = false;
@@ -350,6 +371,18 @@
     fallbackEl.hidden = true;
     panel.appendChild(fallbackEl);
 
+    // Barre d'identification visiteur (optionnelle)
+    const userBar = el("div", "chat-user-bar");
+    userNameInput = el("input", "chat-user-input");
+    userNameInput.type = "text";
+    userNameInput.maxLength = 60;
+    userNameInput.value = getUserName();
+    userNameInput.addEventListener("input", () => {
+      saveUserName(userNameInput.value.trim());
+    });
+    userBar.appendChild(userNameInput);
+    panel.appendChild(userBar);
+
     // Formulaire
     const form = el("form", "chat-form");
 
@@ -416,6 +449,10 @@
     const bubbleTextEl = fab.querySelector(".chat-robot__bubble-text");
     if (bubbleTextEl) bubbleTextEl.textContent = t("chat.bubble");
     titleEl.textContent = t("chat.title");
+    if (userNameInput) {
+      userNameInput.setAttribute("placeholder", t("chat.name_placeholder"));
+      userNameInput.setAttribute("aria-label", t("chat.name_placeholder"));
+    }
     inputEl.setAttribute("placeholder", t("chat.placeholder"));
     inputEl.setAttribute("aria-label", t("chat.placeholder"));
     sendBtn.setAttribute("aria-label", t("chat.send"));
@@ -838,6 +875,7 @@
       const payload = {
         sessionId: getSessionId(),
         lang: lang(),
+        userName: getUserName() || (userNameInput ? userNameInput.value.trim() : ""),
         messages: history
           .slice(-8)
           .map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.text })),
