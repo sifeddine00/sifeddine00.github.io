@@ -725,6 +725,7 @@
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
 }
 
 .chat-msg--user {
